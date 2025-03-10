@@ -1,0 +1,67 @@
+#include <Arduino.h>
+
+
+#include "mpu6050_handler.h"
+
+
+// MPU 6050 libraries
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <FS.h>
+
+//-------------------------------------
+// GYROSCOPE / ACCELOREMETER (MPU6050)
+//-------------------------------------
+// Adafruit_MPU6050 mpu;
+// sensors_event_t a, g, temp;
+
+
+
+
+//-------------------------------------
+// Variables
+//-------------------------------------
+// struct DataFile {
+//   char accelX[16];
+//   char accelY[16];
+//   char accelZ[16];
+//   char gyroX[16];
+//   char gyroY[16];
+//   char gyroZ[16];
+// };
+// DataFile datafile;       // <- global datafile object
+
+// extern DataFile datafile;
+
+
+
+
+//-------------------------------------
+void setup() {
+  // put your setup code here, to run once:
+    // Initialise Serial0 to show in Terminal
+  Serial.begin(115200);
+  Serial.println("Initialising...");
+
+  // Set CPU frequency
+  setCpuFrequencyMhz(80);
+  Serial.println(getCpuFrequencyMhz()); 
+
+  
+
+  // Initialise MPU6050
+  StartMPU6050();
+  Serial.println("Initialised!");
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  Serial.println("Sampling...");
+  ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
+  delay(5000);
+
+}
+
+
+
