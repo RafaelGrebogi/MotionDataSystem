@@ -3,9 +3,11 @@
 
 #include "mpu6050_handler.h"
 #include "wifi_handler.h"
+#include "http_handler.h"
 
 // WiFi library
 #include <WiFi.h>
+#include <HTTPClient.h>
 
 
 
@@ -67,7 +69,19 @@ void loop() {
   // put your main code here, to run repeatedly:
   Serial.println("Sampling...");
   ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
-  delay(5000);
+  // delay(5000);
+
+  float sensorValue = random(10, 100);  // Replace with real sensor data
+  sendDataToThingSpeak(sensorValue);
+  
+  Serial.print("Sent value: ");
+  Serial.println(sensorValue);
+  
+  delay(17000);  // Wait 17 seconds before next update
+
+
+
+
 
 }
 

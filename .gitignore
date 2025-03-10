@@ -7,6 +7,8 @@
 
 wifi_credentials.h
 wifi_credentials.cpp
+api_credentials.h
+api_credentials.cpp
 
 # Ignore compiled binary files
 *.elf
