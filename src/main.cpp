@@ -2,6 +2,11 @@
 
 
 #include "mpu6050_handler.h"
+#include "wifi_handler.h"
+
+// WiFi library
+#include <WiFi.h>
+
 
 
 // MPU 6050 libraries
@@ -46,12 +51,15 @@ void setup() {
 
   // Set CPU frequency
   setCpuFrequencyMhz(80);
-  Serial.println(getCpuFrequencyMhz()); 
+  Serial.print("CPU Frequency (MHz): ");
+  Serial.println(getCpuFrequencyMhz());
 
-  
+  // Initialise Wi-Fi
+  ConnectToWifi();
 
   // Initialise MPU6050
   StartMPU6050();
+  
   Serial.println("Initialised!");
 }
 

@@ -5,6 +5,9 @@
 .vscode/launch.json
 .vscode/ipch
 
+wifi_credentials.h
+wifi_credentials.cpp
+
 # Ignore compiled binary files
 *.elf
 *.bin
