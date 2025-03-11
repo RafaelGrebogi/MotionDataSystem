@@ -1,3 +1,8 @@
+
+#ifndef PIO_UNIT_TESTING
+
+
+
 #include <Arduino.h>
 
 
@@ -86,4 +91,6 @@ void loop() {
 }
 
 
+
+#endif 
 
