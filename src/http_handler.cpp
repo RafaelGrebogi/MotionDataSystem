@@ -3,7 +3,7 @@
 
 // WiFiClient client;
 
-void sendDataToThingSpeak(float value) {
+int sendDataToThingSpeak(float value) {
     if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         String url = String(thingSpeakBaseUrl) + "?api_key=" + String(thingSpeakApiKey) + "&field1=" + String(value);
@@ -22,7 +22,9 @@ void sendDataToThingSpeak(float value) {
           Serial.print(s + "\n");
         
         http.end();
+        return httpResponseCode;
     } else {
         Serial.println("WiFi Disconnected");
+        return -1;
     }
 }

@@ -7,6 +7,6 @@
 
 
 
-void sendDataToThingSpeak(float value);
+int sendDataToThingSpeak(float value);
 
 #endif  // HTTP_HANDLER_H
