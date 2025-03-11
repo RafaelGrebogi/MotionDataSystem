@@ -76,22 +76,27 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.println("Sampling...");
-  ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
-  delay(2000);
+ 
+  // Serial.println("Sampling...");
+  // ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
+  // delay(2000);
 
-  float sensorValue = random(10, 100);  // Replace with real sensor data
-  // sendDataToThingSpeak(sensorValue);
+  // float sensorValue = random(10, 100);  // Replace with real sensor data
+  // // sendDataToThingSpeak(sensorValue);
   
-  Serial.print("Sent value: ");
-  Serial.println(sensorValue);
+  // Serial.print("Sent value: ");
+  // Serial.println(sensorValue);
+
+  // // delay(17000);  // Wait 17 seconds before next update
 
   server.handleClient();
   
-  // delay(17000);  // Wait 17 seconds before next update
-
   
+
+  if (isAcquiring) {  // ✅ Start acquisition when START is clicked
+    Serial.println("🔴 Data Acquisition Running...");
+    delay(1000);  // ✅ Simulate data acquisition (replace with real logic)
+}
 
 
 }

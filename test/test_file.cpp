@@ -50,34 +50,34 @@ void test_thingspeak_failure() {
 //============================
 void test_webserver_start() {
     StartWebServer();
-    isAcquiring = false;  // ✅ Ensure the initial state is OFF
-    handleStart();  // ✅ Call the function to simulate a request
-    TEST_ASSERT_TRUE(isAcquiring);  // ✅ `isAcquiring` should now be true
+    isAcquiring = false;  // Ensure the initial state is OFF
+    handleStart();  // Call the function to simulate a request
+    TEST_ASSERT_TRUE(isAcquiring);  // `isAcquiring` should now be true
 }
 
 void test_webserver_stop() {
     // StartWebServer();
-    isAcquiring = true;  // ✅ Ensure acquisition is running
-    handleStop();  // ✅ Call the function to simulate a request
-    TEST_ASSERT_FALSE(isAcquiring);  // ✅ `isAcquiring` should now be false
+    isAcquiring = true;  //  Ensure acquisition is running
+    handleStop();  //  Call the function to simulate a request
+    TEST_ASSERT_FALSE(isAcquiring);  //  `isAcquiring` should now be false
 }
 
 void test_webserver_status_running() {
     // StartWebServer();
-    isAcquiring = true;  // ✅ Simulate running state
+    isAcquiring = true;  //  Simulate running state
     String response;
-    handleStatus();  // ✅ Call status endpoint
-    response = isAcquiring ? "RUNNING" : "STOPPED";  // ✅ Simulate response
-    TEST_ASSERT_EQUAL_STRING("RUNNING", response.c_str());  // ✅ Check correct response
+    handleStatus();  //  Call status endpoint
+    response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
+    TEST_ASSERT_EQUAL_STRING("RUNNING", response.c_str());  //  Check correct response
 }
 
 void test_webserver_status_stopped() {
     // StartWebServer();
-    isAcquiring = false;  // ✅ Simulate stopped state
+    isAcquiring = false;  //  Simulate stopped state
     String response;
     handleStatus();
-    response = isAcquiring ? "RUNNING" : "STOPPED";  // ✅ Simulate response
-    TEST_ASSERT_EQUAL_STRING("STOPPED", response.c_str());  // ✅ Check correct response
+    response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
+    TEST_ASSERT_EQUAL_STRING("STOPPED", response.c_str());  //  Check correct response
 }
 //============================
 //============================
