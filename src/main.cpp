@@ -77,9 +77,9 @@ void setup() {
 
 void loop() {
  
-  // Serial.println("Sampling...");
-  // ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
-  // delay(2000);
+  Serial.println("Sampling...");
+  ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
+  delay(2000);
 
   // float sensorValue = random(10, 100);  // Replace with real sensor data
   // // sendDataToThingSpeak(sensorValue);
@@ -89,14 +89,14 @@ void loop() {
 
   // // delay(17000);  // Wait 17 seconds before next update
 
-  server.handleClient();
+  // server.handleClient();
   
   
 
-  if (isAcquiring) {  // ✅ Start acquisition when START is clicked
-    Serial.println("🔴 Data Acquisition Running...");
-    delay(1000);  // ✅ Simulate data acquisition (replace with real logic)
-}
+  // if (isAcquiring) {  // ✅ Start acquisition when START is clicked
+  //   Serial.println("🔴 Data Acquisition Running...");
+  //   delay(1000);  // ✅ Simulate data acquisition (replace with real logic)
+// }
 
 
 }

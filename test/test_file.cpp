@@ -3,6 +3,7 @@
 #include "wifi_handler.h"
 #include "http_handler.h"
 #include "web_handler.h"
+#include "mpu6050_handler.h"
 
 //============================
 void setUp(void) {
@@ -13,6 +14,40 @@ void setUp(void) {
 void tearDown(void) {
     // clean stuff up here
   }
+
+//============================
+// MPU6050 Tests
+//============================
+void test_MPUsensor_accelX() {
+  StartMPU6050();
+  delay(1000);
+  ReadGyro(datafile);
+
+  float accelX_value = atof(datafile.accelX);
+  TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, accelX_value);
+}
+void test_MPUsensor_accelY() {
+    StartMPU6050();
+    delay(1000);
+    ReadGyro(datafile);
+  
+    float accelY_value = atof(datafile.accelY);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, -0.5, accelY_value);
+  }
+
+void test_MPUsensor_accelZ() {
+    StartMPU6050();
+    delay(1000);
+    ReadGyro(datafile);
+
+    float accelZ_value = atof(datafile.accelZ);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, 9.5, accelZ_value);
+
+  }
+
+//============================
+//============================
+
 
 //============================
 // WiFi Tests
@@ -87,6 +122,9 @@ void test_webserver_status_stopped() {
 //============================
 int runUnityTests(void) {
     UNITY_BEGIN();
+    RUN_TEST(test_MPUsensor_accelX);
+    RUN_TEST(test_MPUsensor_accelY);
+    RUN_TEST(test_MPUsensor_accelZ);
     RUN_TEST(test_wifi_connection);
     RUN_TEST(test_thingspeak_success);
     RUN_TEST(test_thingspeak_failure);
