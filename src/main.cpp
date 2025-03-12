@@ -41,7 +41,7 @@
 GyroBias gyro_bias;
 
 // Chip ID number
-char chipIDChar[16];
+extern char chipIDChar[16];
 
 
 const char* ntpServer = "pool.ntp.org";

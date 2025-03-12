@@ -1,6 +1,6 @@
 #include "json_handler.h"
 
-char chipID[16] = "";
+char chipIDChar[16] = "";
 
 
 // Define the number of samples per batch
@@ -46,7 +46,7 @@ String prepareJsonPayload() {
     
 
     JsonDocument doc;  // Adjust buffer size based on expected data
-    doc["device_id"] = chipID;
+    doc["device_id"] = chipIDChar;
     doc["timestamp"] = getCurrentTimestamp();
 
     JsonArray samples = doc["samples"].to<JsonArray>();
@@ -73,7 +73,7 @@ String prepareJsonPayload() {
 char* ESP32_ID_Extraction(){
     char chipIDChar1[10];   //print High2 bytes
     char chipIDChar2[10];   //print Low 4bytes.
-    // static char chipIDChar[16];    // Full ID char
+    static char chipIDCharFull[16];    // Full ID char
 
     // Chip ID extraction to String
     uint64_t chipid = ESP.getEfuseMac(); //Get the CHIP MAC ADRESS
@@ -82,11 +82,11 @@ char* ESP32_ID_Extraction(){
   
     sprintf(chipIDChar1, "%04X", (uint16_t)(chipid >> 32));
     sprintf(chipIDChar2, "%08X", (uint32_t)chipid);
-    strcpy(chipIDChar,chipIDChar1);
-    strcat(chipIDChar,chipIDChar2);
+    strcpy(chipIDCharFull,chipIDChar1);
+    strcat(chipIDCharFull,chipIDChar2);
     // Serial.println(chipIDChar); // holding chip ID characters
     //Serial.println(chipIDChar2); //
-    return chipIDChar;
+    return chipIDCharFull;
   }
 
 //#################################################################
