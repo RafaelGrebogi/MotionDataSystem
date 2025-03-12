@@ -1,6 +1,6 @@
 #include "web_handler.h"
-extern hw_timer_t *My_timer;
 
+hw_timer_t *My_timer = NULL;
 
 WebServer server(80);  // Creates a web server that listens on port 80 (default for HTTP)
 bool isAcquiring = false; 
@@ -41,4 +41,20 @@ void StartWebServer() {
     server.on("/status", handleStatus);
 
     server.begin();
+}
+
+
+//###########################
+// Web Server test function
+
+void test_handleStart() {
+    isAcquiring = true;
+    // timerAlarmEnable(My_timer); //Just Enabl
+    server.send(200, "text/plain", "Acquisition STARTED");
+}
+
+void test_handleStop() {
+    isAcquiring = false;
+    // timerAlarmDisable(My_timer);
+    server.send(200, "text/plain", "Acquisition STOPPED");
 }

@@ -5,6 +5,9 @@
 #include "web_handler.h"
 #include "mpu6050_handler.h"
 
+GyroBias test_gyro_bias = {0.0, 0.0, 0.0};
+
+
 //============================
 void setUp(void) {
     // set stuff up here
@@ -21,7 +24,7 @@ void tearDown(void) {
 void test_MPUsensor_accelX() {
   StartMPU6050();
   delay(1000);
-  ReadGyro(datafile);
+  ReadGyro(datafile, test_gyro_bias);
 
   float accelX_value = atof(datafile.accelX);
   TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, accelX_value);
@@ -29,7 +32,7 @@ void test_MPUsensor_accelX() {
 void test_MPUsensor_accelY() {
     StartMPU6050();
     delay(1000);
-    ReadGyro(datafile);
+    ReadGyro(datafile, test_gyro_bias);
   
     float accelY_value = atof(datafile.accelY);
     TEST_ASSERT_FLOAT_WITHIN(0.5, -0.5, accelY_value);
@@ -38,13 +41,39 @@ void test_MPUsensor_accelY() {
 void test_MPUsensor_accelZ() {
     StartMPU6050();
     delay(1000);
-    ReadGyro(datafile);
+    ReadGyro(datafile, test_gyro_bias);
 
     float accelZ_value = atof(datafile.accelZ);
     TEST_ASSERT_FLOAT_WITHIN(0.5, 9.5, accelZ_value);
 
   }
 
+  void test_MPUsensor_gyroX() {
+    StartMPU6050();
+    delay(1000);
+    ReadGyro(datafile, test_gyro_bias);
+  
+    float gyroX_value = atof(datafile.gyroX);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroX_value);
+  }
+  void test_MPUsensor_gyroY() {
+      StartMPU6050();
+      delay(1000);
+      ReadGyro(datafile, test_gyro_bias);
+    
+      float gyroY_value = atof(datafile.gyroY);
+      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroY_value);
+    }
+  
+  void test_MPUsensor_gyroZ() {
+      StartMPU6050();
+      delay(1000);
+      ReadGyro(datafile, test_gyro_bias);
+  
+      float gyroZ_value = atof(datafile.gyroZ);
+      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroZ_value);
+  
+    }
 //============================
 //============================
 
@@ -86,14 +115,14 @@ void test_thingspeak_failure() {
 void test_webserver_start() {
     StartWebServer();
     isAcquiring = false;  // Ensure the initial state is OFF
-    handleStart();  // Call the function to simulate a request
+    test_handleStart();  // Call the function to simulate a request
     TEST_ASSERT_TRUE(isAcquiring);  // `isAcquiring` should now be true
 }
 
 void test_webserver_stop() {
     // StartWebServer();
     isAcquiring = true;  //  Ensure acquisition is running
-    handleStop();  //  Call the function to simulate a request
+    test_handleStop();  //  Call the function to simulate a request
     TEST_ASSERT_FALSE(isAcquiring);  //  `isAcquiring` should now be false
 }
 
@@ -122,9 +151,13 @@ void test_webserver_status_stopped() {
 //============================
 int runUnityTests(void) {
     UNITY_BEGIN();
+    UNITY_EXEC_TIME_START();
     RUN_TEST(test_MPUsensor_accelX);
     RUN_TEST(test_MPUsensor_accelY);
     RUN_TEST(test_MPUsensor_accelZ);
+    RUN_TEST(test_MPUsensor_gyroX);
+    RUN_TEST(test_MPUsensor_gyroY);
+    RUN_TEST(test_MPUsensor_gyroZ);
     RUN_TEST(test_wifi_connection);
     RUN_TEST(test_thingspeak_success);
     RUN_TEST(test_thingspeak_failure);
@@ -132,6 +165,7 @@ int runUnityTests(void) {
     RUN_TEST(test_webserver_stop);
     RUN_TEST(test_webserver_status_running);
     RUN_TEST(test_webserver_status_stopped);
+    UNITY_EXEC_TIME_STOP();
     return UNITY_END();
   }
 //============================
