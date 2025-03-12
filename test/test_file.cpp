@@ -151,21 +151,24 @@ void test_webserver_status_stopped() {
 //============================
 int runUnityTests(void) {
     UNITY_BEGIN();
-    UNITY_EXEC_TIME_START();
+    
     RUN_TEST(test_MPUsensor_accelX);
     RUN_TEST(test_MPUsensor_accelY);
     RUN_TEST(test_MPUsensor_accelZ);
     RUN_TEST(test_MPUsensor_gyroX);
     RUN_TEST(test_MPUsensor_gyroY);
     RUN_TEST(test_MPUsensor_gyroZ);
+
     RUN_TEST(test_wifi_connection);
+
     RUN_TEST(test_thingspeak_success);
     RUN_TEST(test_thingspeak_failure);
+
     RUN_TEST(test_webserver_start);
     RUN_TEST(test_webserver_stop);
     RUN_TEST(test_webserver_status_running);
     RUN_TEST(test_webserver_status_stopped);
-    UNITY_EXEC_TIME_STOP();
+
     return UNITY_END();
   }
 //============================

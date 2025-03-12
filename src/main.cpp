@@ -1,7 +1,17 @@
 
 #ifndef PIO_UNIT_TESTING
 
+//-------------------------------------
+// LIBRARIES
+//-------------------------------------
+#include <stdio.h>
+#include <stdint.h> // To handle string conversion
 
+// Hardware Abstract Layer library
+#include "esp32-hal-cpu.h"
+
+// JSON document library
+#include "ArduinoJson.h"
 
 #include <Arduino.h>
 #include <unity.h>
@@ -10,6 +20,7 @@
 #include "wifi_handler.h"
 #include "http_handler.h"
 #include "web_handler.h"
+#include "json_handler.h"
 
 // WiFi library
 #include <WiFi.h>
@@ -27,6 +38,8 @@
 // Gyroscope bias variable
 GyroBias gyro_bias;
 
+// Chip ID number
+char chipIDChar[16];
 
 //-------------------------------------
 // INTERRUPTION SERVICE ROUTINE VARIABLES 
@@ -59,6 +72,7 @@ void setup() {
   setCpuFrequencyMhz(80);
   Serial.print("CPU Frequency (MHz): ");
   Serial.println(getCpuFrequencyMhz());
+  strcpy(chipIDChar, ESP32_ID_Extraction());
 
   // Initialise Wi-Fi
   ConnectToWifi();
