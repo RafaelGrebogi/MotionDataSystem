@@ -24,8 +24,8 @@
 #include <Wire.h>
 #include <FS.h>
 
-
-
+// Gyroscope bias variable
+GyroBias gyro_bias;
 
 
 //-------------------------------------
@@ -69,6 +69,15 @@ void setup() {
   // Initialise MPU6050
   StartMPU6050();
 
+  Serial.println("Calibrating Gyroscope...");
+  gyro_bias = CalibrateGyro();
+
+  Serial.println("Calibration complete.");
+  Serial.print("Bias X: "); Serial.println(gyro_bias.x);
+  Serial.print("Bias Y: "); Serial.println(gyro_bias.y);
+  Serial.print("Bias Z: "); Serial.println(gyro_bias.z);
+
+
   // Initiliase Timer_0 for ISR
   My_timer = timerBegin(0, 80, true);  // Timer 0, prescaler 80 (1µs resolution)
   timerAttachInterrupt(My_timer, &onTimer, true);
@@ -84,7 +93,7 @@ server.handleClient();
   // 100Hz
   if(ISRTimer0){                // Boolean var toggled in Timer0 interruption
 
-    ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
+    ReadGyro(datafile,gyro_bias);       // Read data from gyroscope / acceloremeter (100Hz)
     counter100++;
 
 

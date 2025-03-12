@@ -9,6 +9,14 @@
 extern Adafruit_MPU6050 mpu;  // MPU6050 object
 extern sensors_event_t a, g, temp;
 
+struct GyroBias {
+  float x;
+  float y;
+  float z;
+};
+
+
+
 struct DataFile {
     char accelX[16];
     char accelY[16];
@@ -23,6 +31,7 @@ extern DataFile datafile;
 
 
 void StartMPU6050();
-void ReadGyro(DataFile &datafile);
+void ReadGyro(DataFile &datafile, GyroBias &gyro_bias);
+GyroBias CalibrateGyro();
 
 #endif  // MPU6050_HANDLER_H
