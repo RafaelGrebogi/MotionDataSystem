@@ -1,7 +1,11 @@
 #include "web_handler.h"
+extern hw_timer_t *My_timer;
+
 
 WebServer server(80);  // Creates a web server that listens on port 80 (default for HTTP)
 bool isAcquiring = false; 
+
+
 
 void handleRoot() {
     String html = "<html><body>";
@@ -16,11 +20,13 @@ void handleRoot() {
 
 void handleStart() {
     isAcquiring = true;
+    timerAlarmEnable(My_timer); //Just Enabl
     server.send(200, "text/plain", "Acquisition STARTED");
 }
 
 void handleStop() {
     isAcquiring = false;
+    timerAlarmDisable(My_timer);
     server.send(200, "text/plain", "Acquisition STOPPED");
 }
 

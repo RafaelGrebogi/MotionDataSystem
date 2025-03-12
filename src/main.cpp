@@ -24,29 +24,26 @@
 #include <Wire.h>
 #include <FS.h>
 
-//-------------------------------------
-// GYROSCOPE / ACCELOREMETER (MPU6050)
-//-------------------------------------
-// Adafruit_MPU6050 mpu;
-// sensors_event_t a, g, temp;
 
 
 
 
 //-------------------------------------
-// Variables
+// INTERRUPTION SERVICE ROUTINE VARIABLES 
 //-------------------------------------
-// struct DataFile {
-//   char accelX[16];
-//   char accelY[16];
-//   char accelZ[16];
-//   char gyroX[16];
-//   char gyroY[16];
-//   char gyroZ[16];
-// };
-// DataFile datafile;       // <- global datafile object
+// Timer_0 for ISR 
+hw_timer_t *My_timer = NULL;
+bool ISRTimer0 = false;
+uint8_t counter100 = 0;
 
-// extern DataFile datafile;
+
+//----------------------------------------------------------------- 
+//----------------- Interruption Service Routine ------------------
+//----------------------------------------------------------------- 
+void IRAM_ATTR onTimer(){
+
+  ISRTimer0 = true;   // can change to bitwise operator (~) in the future
+}
 
 
 
@@ -71,15 +68,40 @@ void setup() {
 
   // Initialise MPU6050
   StartMPU6050();
+
+  // Initiliase Timer_0 for ISR
+  My_timer = timerBegin(0, 80, true);  // Timer 0, prescaler 80 (1µs resolution)
+  timerAttachInterrupt(My_timer, &onTimer, true);
+  timerAlarmWrite(My_timer, 10000, true);  //  100Hz interrupt (10ms interval)
   
-  Serial.println("Initialised!");
+  Serial.println("System Initialised!");
 }
 
 void loop() {
- 
-  Serial.println("Sampling...");
-  ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
-  delay(2000);
+
+server.handleClient();
+
+  // 100Hz
+  if(ISRTimer0){                // Boolean var toggled in Timer0 interruption
+
+    ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
+    counter100++;
+
+
+    // 10Hz
+    if(counter100%10 == 0){
+      //Serial.println("Hey10");
+
+    }
+    if(counter100 == 100){
+      counter100 = 0;
+      Serial.println("🔴 Data Acquisition Running...");;
+    }
+
+    ISRTimer0 = false;  // can change to bitwise operator (~) in the future
+
+  }
+
 
   // float sensorValue = random(10, 100);  // Replace with real sensor data
   // // sendDataToThingSpeak(sensorValue);
@@ -89,18 +111,8 @@ void loop() {
 
   // // delay(17000);  // Wait 17 seconds before next update
 
-  // server.handleClient();
-  
-  
-
-  // if (isAcquiring) {  // ✅ Start acquisition when START is clicked
-  //   Serial.println("🔴 Data Acquisition Running...");
-  //   delay(1000);  // ✅ Simulate data acquisition (replace with real logic)
-// }
-
 
 }
-
 
 
 #endif 

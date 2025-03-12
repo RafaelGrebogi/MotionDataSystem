@@ -3,6 +3,8 @@
 Adafruit_MPU6050 mpu;  // Define MPU6050 object
 sensors_event_t a, g, temp;
 
+extern hw_timer_t *My_timer;
+
 DataFile datafile;
 
 //##############################################################
@@ -97,12 +99,21 @@ void StartMPU6050() {
     sprintf(datafile.gyroZ,"%06f",g.gyro.z); 
   
     //sprintf(datafile.accelX,"%02f",a.acceleration.x); 
-    Serial.println(datafile.accelX);
-    Serial.println(datafile.accelY);
-    Serial.println(datafile.accelZ);
+    // Serial.println(datafile.accelX);
+    // Serial.println(datafile.accelY);
+    // Serial.println(datafile.accelZ);
+    // Serial.println(datafile.gyroX);
+    // Serial.println(datafile.gyroY);
+    // Serial.println(datafile.gyroZ);
+  
+  
+  }
+
+
+  void CalibrateGyro(){
     
-  
-  
+    timerAlarmEnable(My_timer);
+
   }
   
   
