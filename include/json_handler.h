@@ -2,11 +2,14 @@
 #define JSON_HANDLER_H
 
 #include <ArduinoJson.h>
+#include "time.h"
 
 extern char chipIDChar[16];
 
+String getCurrentTimestamp();
 String prepareJsonPayload();
 char* ESP32_ID_Extraction();
+void sendJsonToPC();
 
 void collectData(float ax, float ay, float az, float gx, float gy, float gz, String time);
 
