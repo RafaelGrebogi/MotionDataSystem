@@ -3,7 +3,14 @@
 Adafruit_MPU6050 mpu;  // Define MPU6050 object
 sensors_event_t a, g, temp;
 
+extern hw_timer_t *My_timer;
+extern bool ISRTimer0;
+
 DataFile datafile;
+
+
+
+
 
 //##############################################################
 // Initialise MPU6050
@@ -79,12 +86,12 @@ void StartMPU6050() {
   
     Serial.println("");
     delay(100);
-  }
+}
   
   
   //##############################################################
   // Read MPU6050
-  void ReadGyro(DataFile &datafile){
+void ReadGyro(DataFile &datafile, GyroBias &gyro_bias){
   
     
     mpu.getEvent(&a, &g, &temp);
@@ -92,17 +99,71 @@ void StartMPU6050() {
     sprintf(datafile.accelX,"%06f",a.acceleration.x); 
     sprintf(datafile.accelY,"%06f",a.acceleration.y); 
     sprintf(datafile.accelZ,"%06f",a.acceleration.z); 
-    sprintf(datafile.gyroX,"%06f",g.gyro.x); 
-    sprintf(datafile.gyroY,"%06f",g.gyro.y); 
-    sprintf(datafile.gyroZ,"%06f",g.gyro.z); 
+
+    // Convert raw data to °/s and apply calibration bias
+    float gyro_x = g.gyro.x - gyro_bias.x;
+    float gyro_y = g.gyro.y - gyro_bias.y;
+    float gyro_z = g.gyro.z - gyro_bias.z;
+
+    sprintf(datafile.gyroX,"%06f",gyro_x); 
+    sprintf(datafile.gyroY,"%06f",gyro_y); 
+    sprintf(datafile.gyroZ,"%06f",gyro_z); 
   
     //sprintf(datafile.accelX,"%02f",a.acceleration.x); 
-    Serial.println(datafile.accelX);
-    Serial.println(datafile.accelY);
-    Serial.println(datafile.accelZ);
-    
+    // Serial.println(datafile.accelX);
+    // Serial.println(datafile.accelY);
+    // Serial.println(datafile.accelZ);
+    // Serial.println(datafile.gyroX);
+    // Serial.println(datafile.gyroY);
+    // Serial.println(datafile.gyroZ);
   
   
-  }
+}
+
+
+GyroBias CalibrateGyro(){
+
+    int counter = 0, num_samples = 1000; // Number of samples for calibration
+    float sum_x = 0, sum_y = 0, sum_z = 0;
+
+
+
+    while(counter < num_samples){
+
+        mpu.getEvent(&a, &g, &temp);
+        counter++;
+
+        
+        sum_x += g.gyro.x;
+        sum_y += g.gyro.y;
+        sum_z += g.gyro.z;
+
+        delay(10);
+    }
+
+    // timerAlarmEnable(My_timer);
+
+    // while(counter < num_samples){
+    //   if(ISRTimer0){
+    //     mpu.getEvent(&a, &g, &temp);
+    //     counter++;
+
+        
+    //     sum_x += g.gyro.x / 131.0;  // Convert raw data to °/s
+    //     sum_y += g.gyro.y / 131.0;
+    //     sum_z += g.gyro.z / 131.0;
+
+    //     ISRTimer0 = false;  // can change to bitwise operator (~) in the future
+
+    //   }
+
+    // }
+    // timerAlarmDisable(My_timer);
+
+
+
+  // Return bias as a struct
+  return {sum_x / num_samples, sum_y / num_samples, sum_z / num_samples};
+}
   
   
