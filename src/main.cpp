@@ -1,15 +1,22 @@
-#include <Arduino.h>
 
+#ifndef PIO_UNIT_TESTING
+
+
+
+#include <Arduino.h>
+#include <unity.h>
 
 #include "mpu6050_handler.h"
 #include "wifi_handler.h"
 #include "http_handler.h"
+#include "web_handler.h"
 
 // WiFi library
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-
+// Web Server Library
+#include <WebServer.h>
 
 // MPU 6050 libraries
 #include <Adafruit_MPU6050.h>
@@ -59,6 +66,9 @@ void setup() {
   // Initialise Wi-Fi
   ConnectToWifi();
 
+  // Initialise WebServer
+  StartWebServer();
+
   // Initialise MPU6050
   StartMPU6050();
   
@@ -66,24 +76,32 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+ 
   Serial.println("Sampling...");
   ReadGyro(datafile);       // Read data from gyroscope / acceloremeter (100Hz)
-  // delay(5000);
+  delay(2000);
 
-  float sensorValue = random(10, 100);  // Replace with real sensor data
-  sendDataToThingSpeak(sensorValue);
+  // float sensorValue = random(10, 100);  // Replace with real sensor data
+  // // sendDataToThingSpeak(sensorValue);
   
-  Serial.print("Sent value: ");
-  Serial.println(sensorValue);
+  // Serial.print("Sent value: ");
+  // Serial.println(sensorValue);
+
+  // // delay(17000);  // Wait 17 seconds before next update
+
+  // server.handleClient();
   
-  delay(17000);  // Wait 17 seconds before next update
+  
 
-
-
+  // if (isAcquiring) {  // ✅ Start acquisition when START is clicked
+  //   Serial.println("🔴 Data Acquisition Running...");
+  //   delay(1000);  // ✅ Simulate data acquisition (replace with real logic)
+// }
 
 
 }
 
 
+
+#endif 
 
