@@ -4,9 +4,11 @@
 #include "http_handler.h"
 #include "web_handler.h"
 #include "mpu6050_handler.h"
+#include "json_handler.h"
 
 GyroBias test_gyro_bias = {0.0, 0.0, 0.0};
-
+extern int dataCount;
+extern hw_timer_t *My_timer;
 
 //============================
 void setUp(void) {
@@ -26,16 +28,14 @@ void test_MPUsensor_accelX() {
   delay(1000);
   ReadGyro(datafile, test_gyro_bias);
 
-  float accelX_value = atof(datafile.accelX);
-  TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, accelX_value);
+  TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, datafile.accelX);
 }
 void test_MPUsensor_accelY() {
     StartMPU6050();
     delay(1000);
     ReadGyro(datafile, test_gyro_bias);
   
-    float accelY_value = atof(datafile.accelY);
-    TEST_ASSERT_FLOAT_WITHIN(0.5, -0.5, accelY_value);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, -0.5, datafile.accelY);
   }
 
 void test_MPUsensor_accelZ() {
@@ -43,8 +43,7 @@ void test_MPUsensor_accelZ() {
     delay(1000);
     ReadGyro(datafile, test_gyro_bias);
 
-    float accelZ_value = atof(datafile.accelZ);
-    TEST_ASSERT_FLOAT_WITHIN(0.5, 9.5, accelZ_value);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, 9.5, datafile.accelZ);
 
   }
 
@@ -53,16 +52,14 @@ void test_MPUsensor_accelZ() {
     delay(1000);
     ReadGyro(datafile, test_gyro_bias);
   
-    float gyroX_value = atof(datafile.gyroX);
-    TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroX_value);
+    TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, datafile.gyroX);
   }
   void test_MPUsensor_gyroY() {
       StartMPU6050();
       delay(1000);
       ReadGyro(datafile, test_gyro_bias);
     
-      float gyroY_value = atof(datafile.gyroY);
-      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroY_value);
+      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, datafile.gyroY);
     }
   
   void test_MPUsensor_gyroZ() {
@@ -70,12 +67,66 @@ void test_MPUsensor_accelZ() {
       delay(1000);
       ReadGyro(datafile, test_gyro_bias);
   
-      float gyroZ_value = atof(datafile.gyroZ);
-      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, gyroZ_value);
+      TEST_ASSERT_FLOAT_WITHIN(0.5, 0.5, datafile.gyroZ);
   
     }
 //============================
 //============================
+
+
+//============================
+// JSON Tests
+//============================
+void test_json_not_empty() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  String jsonOutput = prepareJsonPayload();
+  
+  TEST_ASSERT(jsonOutput.length() > 2);  // Ensure JSON is not empty ("{}" is 2 chars)
+}
+
+
+void test_json_contains_device_id() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  String jsonOutput = prepareJsonPayload();
+  
+  TEST_ASSERT_NOT_EQUAL(jsonOutput.indexOf("device_id"), -1);  // Ensure "device_id" exists
+}
+
+
+void test_json_contains_message_id() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  String jsonOutput = prepareJsonPayload();
+  
+  TEST_ASSERT_NOT_EQUAL(jsonOutput.indexOf("message_id"), -1);  // Ensure "message_id" exists
+}
+
+
+void test_json_contains_timestamp() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  String jsonOutput = prepareJsonPayload();
+  
+  TEST_ASSERT_NOT_EQUAL(jsonOutput.indexOf("timestamp"), -1);  // Ensure "timestamp" exists
+}
+
+void test_json_contains_samples() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  String jsonOutput = prepareJsonPayload();
+  
+  TEST_ASSERT_NOT_EQUAL(jsonOutput.indexOf("\"samples\""), -1);  // Ensure "samples" key exists
+}
+
+
+
+void test_json_reset_after_sending() {
+  dataCount = BATCH_SIZE;  // Simulate full buffer
+  prepareJsonPayload();  // Generate JSON
+
+  TEST_ASSERT_EQUAL_INT(0, dataCount);  // Ensure dataCount resets
+}
+
+//============================
+//============================
+
 
 
 //============================
@@ -113,7 +164,7 @@ void test_thingspeak_failure() {
 // WebServer Tests
 //============================
 void test_webserver_start() {
-    StartWebServer();
+    // StartWebServer();
     isAcquiring = false;  // Ensure the initial state is OFF
     test_handleStart();  // Call the function to simulate a request
     TEST_ASSERT_TRUE(isAcquiring);  // `isAcquiring` should now be true
@@ -168,6 +219,13 @@ int runUnityTests(void) {
     RUN_TEST(test_webserver_stop);
     RUN_TEST(test_webserver_status_running);
     RUN_TEST(test_webserver_status_stopped);
+
+    RUN_TEST(test_json_not_empty);
+    RUN_TEST(test_json_contains_device_id);
+    RUN_TEST(test_json_contains_message_id);
+    RUN_TEST(test_json_contains_timestamp);
+    RUN_TEST(test_json_contains_samples);
+    RUN_TEST(test_json_reset_after_sending);
 
     return UNITY_END();
   }

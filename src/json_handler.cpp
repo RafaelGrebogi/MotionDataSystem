@@ -4,7 +4,7 @@ char chipIDChar[16] = "";
 
 
 // Define the number of samples per batch
-#define BATCH_SIZE 10
+// #define BATCH_SIZE 10
 
 // Structure to store sensor data
 struct SensorData {
@@ -67,7 +67,7 @@ String prepareJsonPayload() {
 
     String jsonData;
     serializeJson(doc, jsonData);
-    // dataCount = 0;  //  Clear buffer after JSON creation
+    dataCount = 0;  //  Clear buffer after JSON creation
 
     return jsonData;
 }

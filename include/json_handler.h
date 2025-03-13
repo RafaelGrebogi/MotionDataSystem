@@ -6,6 +6,10 @@
 
 extern char chipIDChar[16];
 
+// Define the number of samples per batch
+#define BATCH_SIZE 10
+extern int dataCount;
+
 String getCurrentTimestamp();
 String prepareJsonPayload();
 char* ESP32_ID_Extraction();
