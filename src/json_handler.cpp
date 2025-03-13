@@ -1,5 +1,6 @@
 #include "json_handler.h"
 
+
 char chipIDChar[16] = "";
 
 
@@ -33,6 +34,9 @@ void collectData(float ax, float ay, float az, float gx, float gy, float gz, Str
 
     if (dataCount >= BATCH_SIZE) {  // Check if buffer is full
         jsonDataReady = prepareJsonPayload();  // Generate JSON
+
+        sendDataToFirebase(jsonDataReady);
+
         Serial.println("JSON Ready:");
         Serial.println(jsonDataReady);  // Print JSON for verification
 
@@ -98,8 +102,14 @@ char* ESP32_ID_Extraction(){
 //#################################################################
 // Function to generate a unique message ID
 String generateMessageID() {
-    msgCounter++;  // ✅ Increment counter for uniqueness
-    return String(chipIDChar) + "_" + getMsgTimestamp() + "_" + String(msgCounter);
+
+    char msgID[50];
+    msgCounter++;  //  Increment counter for uniqueness
+    // return String(chipIDChar) + "_" + getMsgTimestamp() + "_" + String(msgCounter);
+
+    sprintf(msgID, "%s_%s_%d", chipIDChar, getMsgTimestamp().c_str(), msgCounter);
+
+    return String(msgID);
 }
 
 //#################################################################
