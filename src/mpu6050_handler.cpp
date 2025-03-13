@@ -96,18 +96,16 @@ void ReadGyro(DataFile &datafile, GyroBias &gyro_bias){
     
     mpu.getEvent(&a, &g, &temp);
   
-    sprintf(datafile.accelX,"%06f",a.acceleration.x); 
-    sprintf(datafile.accelY,"%06f",a.acceleration.y); 
-    sprintf(datafile.accelZ,"%06f",a.acceleration.z); 
+    datafile.accelX = a.acceleration.x;
+    datafile.accelY = a.acceleration.y;
+    datafile.accelZ = a.acceleration.z;
 
-    // Convert raw data to °/s and apply calibration bias
-    float gyro_x = g.gyro.x - gyro_bias.x;
-    float gyro_y = g.gyro.y - gyro_bias.y;
-    float gyro_z = g.gyro.z - gyro_bias.z;
+    // Apply calibration bias
+    datafile.gyroX = g.gyro.x - gyro_bias.x;
+    datafile.gyroY = g.gyro.y - gyro_bias.y;
+    datafile.gyroZ = g.gyro.z - gyro_bias.z;
 
-    sprintf(datafile.gyroX,"%06f",gyro_x); 
-    sprintf(datafile.gyroY,"%06f",gyro_y); 
-    sprintf(datafile.gyroZ,"%06f",gyro_z); 
+   
   
     //sprintf(datafile.accelX,"%02f",a.acceleration.x); 
     // Serial.println(datafile.accelX);
@@ -120,48 +118,23 @@ void ReadGyro(DataFile &datafile, GyroBias &gyro_bias){
   
 }
 
-
+//##############################################################
 GyroBias CalibrateGyro(){
 
     int counter = 0, num_samples = 1000; // Number of samples for calibration
     float sum_x = 0, sum_y = 0, sum_z = 0;
 
-
-
     while(counter < num_samples){
-
         mpu.getEvent(&a, &g, &temp);
         counter++;
-
-        
+ 
         sum_x += g.gyro.x;
         sum_y += g.gyro.y;
         sum_z += g.gyro.z;
 
         delay(10);
     }
-
-    // timerAlarmEnable(My_timer);
-
-    // while(counter < num_samples){
-    //   if(ISRTimer0){
-    //     mpu.getEvent(&a, &g, &temp);
-    //     counter++;
-
-        
-    //     sum_x += g.gyro.x / 131.0;  // Convert raw data to °/s
-    //     sum_y += g.gyro.y / 131.0;
-    //     sum_z += g.gyro.z / 131.0;
-
-    //     ISRTimer0 = false;  // can change to bitwise operator (~) in the future
-
-    //   }
-
-    // }
-    // timerAlarmDisable(My_timer);
-
-
-
+   
   // Return bias as a struct
   return {sum_x / num_samples, sum_y / num_samples, sum_z / num_samples};
 }

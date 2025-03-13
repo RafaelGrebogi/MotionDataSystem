@@ -1,6 +1,6 @@
 #include "web_handler.h"
 
-hw_timer_t *My_timer = NULL;
+// hw_timer_t *My_timer = NULL;
 
 WebServer server(80);  // Creates a web server that listens on port 80 (default for HTTP)
 bool isAcquiring = false; 

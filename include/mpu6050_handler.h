@@ -18,12 +18,8 @@ struct GyroBias {
 
 
 struct DataFile {
-    char accelX[16];
-    char accelY[16];
-    char accelZ[16];
-    char gyroX[16];
-    char gyroY[16];
-    char gyroZ[16];
+  float accelX, accelY, accelZ;
+  float gyroX, gyroY, gyroZ;
   };
 // DataFile datafile;       // <- global datafile object
 
