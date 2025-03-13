@@ -10,6 +10,8 @@ String getCurrentTimestamp();
 String prepareJsonPayload();
 char* ESP32_ID_Extraction();
 void sendJsonToPC();
+String generateMessageID();
+String getMsgTimestamp();
 
 void collectData(float ax, float ay, float az, float gx, float gy, float gz, String time);
 

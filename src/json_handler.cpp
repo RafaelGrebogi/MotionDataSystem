@@ -18,6 +18,8 @@ struct SensorData {
 SensorData sensorBuffer[BATCH_SIZE];
 int dataCount = 0;
 
+// Persistent counter (increment for each message)
+int msgCounter = 0;  
 
 String jsonDataReady;
 
@@ -46,8 +48,10 @@ String prepareJsonPayload() {
     
 
     JsonDocument doc;  // Adjust buffer size based on expected data
+    doc["message_id"] = generateMessageID();
     doc["device_id"] = chipIDChar;
     doc["timestamp"] = getCurrentTimestamp();
+    
 
     JsonArray samples = doc["samples"].to<JsonArray>();
     for (int i = 0; i < dataCount; i++) {
@@ -88,6 +92,27 @@ char* ESP32_ID_Extraction(){
     //Serial.println(chipIDChar2); //
     return chipIDCharFull;
   }
+
+
+
+//#################################################################
+// Function to generate a unique message ID
+String generateMessageID() {
+    msgCounter++;  // ✅ Increment counter for uniqueness
+    return String(chipIDChar) + "_" + getMsgTimestamp() + "_" + String(msgCounter);
+}
+
+//#################################################################
+String getMsgTimestamp() {
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        return "Unknown";  // ✅ Return default if time fetch fails
+    }
+    char timeStr[30];
+    strftime(timeStr, sizeof(timeStr), "%Y%m%d%H%M%S", &timeinfo);  // ✅ Format: YYYYMMDDHHMMSS
+    return String(timeStr);
+}
+
 
 //#################################################################
 String getCurrentTimestamp(){
