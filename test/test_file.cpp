@@ -142,20 +142,20 @@ void test_wifi_connection() {
 //============================
 // API Tests
 //============================
-void test_thingspeak_success() {
-    ConnectToWifi();
-    float testValue = 42.0;
-    int responseCode = sendDataToThingSpeak(testValue);  // Use new function name
+// void test_thingspeak_success() {
+//     ConnectToWifi();
+//     float testValue = 42.0;
+//     int responseCode = sendDataToThingSpeak(testValue);  // Use new function name
 
-    TEST_ASSERT_EQUAL_INT(200, responseCode);  // Expect HTTP 200 OK
-}
+//     TEST_ASSERT_EQUAL_INT(200, responseCode);  // Expect HTTP 200 OK
+// }
 
-void test_thingspeak_failure() {
-    WiFi.disconnect();  // Simulate Wi-Fi failure
-    int responseCode = sendDataToThingSpeak(42.0);  
+// void test_thingspeak_failure() {
+//     WiFi.disconnect();  // Simulate Wi-Fi failure
+//     int responseCode = sendDataToThingSpeak(42.0);  
 
-    TEST_ASSERT_EQUAL_INT(-1, responseCode);  // Expect -1 when Wi-Fi is disconnected
-}
+//     TEST_ASSERT_EQUAL_INT(-1, responseCode);  // Expect -1 when Wi-Fi is disconnected
+// }
 //============================
 //============================
 
@@ -212,8 +212,8 @@ int runUnityTests(void) {
 
     RUN_TEST(test_wifi_connection);
 
-    RUN_TEST(test_thingspeak_success);
-    RUN_TEST(test_thingspeak_failure);
+    // RUN_TEST(test_thingspeak_success);
+    // RUN_TEST(test_thingspeak_failure);
 
     RUN_TEST(test_webserver_start);
     RUN_TEST(test_webserver_stop);

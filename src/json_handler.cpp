@@ -37,8 +37,8 @@ void collectData(float ax, float ay, float az, float gx, float gy, float gz, Str
 
         sendDataToFirebase(jsonDataReady);
 
-        Serial.println("JSON Ready:");
-        Serial.println(jsonDataReady);  // Print JSON for verification
+        // Serial.println("JSON Ready:");
+        // Serial.println(jsonDataReady);  // Print JSON for verification
 
         dataCount = 0;  // Reset data count for the next batch
     }
@@ -103,7 +103,7 @@ char* ESP32_ID_Extraction(){
 // Function to generate a unique message ID
 String generateMessageID() {
 
-    char msgID[50];
+    // char msgID[50];
     msgCounter++;  //  Increment counter for uniqueness
     // return String(chipIDChar) + "_" + getMsgTimestamp() + "_" + String(msgCounter);
 

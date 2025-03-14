@@ -16,6 +16,10 @@
 #include "ArduinoJson.h"
 
 #include <Firebase_ESP_Client.h>
+// //Provide the token generation process info.
+// #include "addons/TokenHelper.h"
+// //Provide the RTDB payload printing info and other helper functions.
+// #include "addons/RTDBHelper.h"
 
 #include <Arduino.h>
 #include <unity.h>
@@ -87,12 +91,15 @@ void setup() {
   // Get Chip ID
   Serial.println(getCpuFrequencyMhz());
   strcpy(chipIDChar, ESP32_ID_Extraction());
-  Serial.println(chipIDChar);
+  
   // Initialise Wi-Fi
   ConnectToWifi();
 
   // Config device to get current time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Get time from NTP
+
+  // Initialise Firebase
+  initiliaseFirebase();
 
   // Initialise WebServer
   StartWebServer();
@@ -119,7 +126,7 @@ void setup() {
 
 void loop() {
 
-server.handleClient();
+  server.handleClient();
 
   // 100Hz
   if(ISRTimer0){                // Boolean var toggled in Timer0 interruption
