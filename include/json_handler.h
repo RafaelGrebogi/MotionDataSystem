@@ -1,10 +1,13 @@
 #ifndef JSON_HANDLER_H
 #define JSON_HANDLER_H
 
+
 #include <ArduinoJson.h>
 #include "time.h"
+#include "http_handler.h"
 
 extern char chipIDChar[16];
+extern char msgID[50];
 
 // Define the number of samples per batch
 #define BATCH_SIZE 10
