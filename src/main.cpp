@@ -1,6 +1,7 @@
 
 #ifndef PIO_UNIT_TESTING
 
+#define TRAINING_MODE  // Comment this line to switch to normal mode
 //-------------------------------------
 // LIBRARIES
 //-------------------------------------
@@ -102,7 +103,11 @@ void setup() {
   initiliaseFirebase();
 
   // Initialise WebServer
-  StartWebServer();
+  #ifdef TRAINING_MODE
+    StartWebServerTRAIN();
+  #else
+    StartWebServer();
+  #endif
 
   // Initialise MPU6050
   StartMPU6050();
