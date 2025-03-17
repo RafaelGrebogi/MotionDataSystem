@@ -23,11 +23,12 @@ void initiliaseFirebase(){
   Serial.println("🔄 Initializing Firebase with OAuth2.0...");
 
   // Assign the database URL
-  config.database_url = "https://esp32-datalogger-c9c32-default-rtdb.asia-southeast1.firebasedatabase.app/";
+  config.database_url = FirebaseBaseUrl;
+
 
   // Assign service account credentials
-  config.service_account.data.project_id = "esp32-datalogger-c9c32";
-  config.service_account.data.client_email = "esp32-data-uploader@esp32-datalogger-c9c32.iam.gserviceaccount.com";
+  config.service_account.data.project_id = FirebaseProject_id;
+  config.service_account.data.client_email = FirebaseClient_email;
   config.service_account.data.private_key = PRIVATE_KEY_STR;
 
 

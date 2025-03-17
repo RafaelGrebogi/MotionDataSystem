@@ -5,14 +5,27 @@
 #include "web_handler.h"
 #include "mpu6050_handler.h"
 #include "json_handler.h"
+#include "api_credentials.h"
+
+
+
+//============================
+// Variables
+//============================
 
 GyroBias test_gyro_bias = {0.0, 0.0, 0.0};
 extern int dataCount;
 extern hw_timer_t *My_timer;
 
+
+
+
+
 //============================
 void setUp(void) {
     // set stuff up here
+
+  
     
   }
   
@@ -140,8 +153,86 @@ void test_wifi_connection() {
 //============================
 
 //============================
-// API Tests
+// Firebase API Tests
 //============================
+
+// 1. Test Firebase Initialization
+void test_firebase_initialization() {
+  TEST_ASSERT_TRUE(Firebase.ready());
+}
+
+// 2. Test Firebase Authentication
+void test_firebase_authentication() {
+  TEST_ASSERT_EQUAL(token_status_ready, config.signer.tokens.status);
+}
+
+// 2. Test Firebase write and delete data
+void test_firebase_write_and_delete_data() {
+  if (!Firebase.ready()) {
+      TEST_FAIL_MESSAGE("❌ Firebase is NOT ready. Skipping test.");
+      return;
+  }
+
+  FirebaseJson json;
+  json.set("test_key", "test_value");
+
+  // Insert Data into Firebase
+  bool writeSuccess = Firebase.RTDB.setJSON(&fbdo, "/ESP32_Develop/UnitTest", &json);
+  TEST_ASSERT_TRUE(writeSuccess);
+
+  // Verify Data Exists
+  bool readSuccess = Firebase.RTDB.getJSON(&fbdo, "/ESP32_Develop/UnitTest");
+  TEST_ASSERT_TRUE(readSuccess);
+
+  // Delete Data from Firebase
+  bool deleteSuccess = Firebase.RTDB.deleteNode(&fbdo, "/ESP32_Develop/UnitTest");
+  TEST_ASSERT_TRUE(deleteSuccess);
+
+  // Verify Data is Deleted
+  readSuccess = Firebase.RTDB.getJSON(&fbdo, "/ESP32_Develop/UnitTest");
+  TEST_ASSERT_FALSE(readSuccess);
+}
+
+// 4. Test Reading Data from Firebase
+void test_firebase_read_data() {
+  if (!Firebase.ready()) {
+      TEST_FAIL_MESSAGE("❌ Firebase is NOT ready. Skipping read test.");
+      return;
+  }
+  FirebaseJson json;
+  json.set("test_key", "test_value");
+
+  // Insert Data into Firebase
+  bool success = Firebase.RTDB.setJSON(&fbdo, "/ESP32_Develop/UnitTest", &json);
+  TEST_ASSERT_TRUE(success);
+
+  // Verify it exists
+  bool readSuccess = Firebase.RTDB.getJSON(&fbdo, "/ESP32_Develop/UnitTest");
+
+  TEST_ASSERT_TRUE(readSuccess);
+  if (!readSuccess) return;
+
+  json = fbdo.to<FirebaseJson>();
+
+  FirebaseJsonData result;
+  json.get(result, "test_key");
+
+  TEST_ASSERT_EQUAL_STRING("test_value", result.stringValue.c_str());
+
+  // DELETE the test data after insertion
+  bool deleteSuccess = Firebase.RTDB.deleteNode(&fbdo, "/ESP32_Develop/UnitTest");
+  TEST_ASSERT_TRUE(deleteSuccess);
+}
+
+
+
+// 5. Test Firebase Handling Incorrect Path
+void test_firebase_invalid_path() {
+  TEST_ASSERT_FALSE(Firebase.RTDB.getJSON(&fbdo, "/ESP32/InvalidPath"));
+}
+
+
+
 // void test_thingspeak_success() {
 //     ConnectToWifi();
 //     float testValue = 42.0;
@@ -212,6 +303,12 @@ int runUnityTests(void) {
 
     RUN_TEST(test_wifi_connection);
 
+    RUN_TEST(test_firebase_initialization);
+    RUN_TEST(test_firebase_authentication);
+    RUN_TEST(test_firebase_write_and_delete_data);
+    RUN_TEST(test_firebase_invalid_path);
+    RUN_TEST(test_firebase_read_data);
+    // RUN_TEST(test_firebase_error_handling);
     // RUN_TEST(test_thingspeak_success);
     // RUN_TEST(test_thingspeak_failure);
 
@@ -237,6 +334,13 @@ int runUnityTests(void) {
   void setup() {
     // Wait ~2 seconds before the Unity test runner
     // establishes connection with a board Serial interface
+
+    // Set up Firebase credentials
+    initiliaseFirebase();
+
+
+
+
     delay(2000);
   
     runUnityTests();
