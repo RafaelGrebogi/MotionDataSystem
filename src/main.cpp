@@ -1,10 +1,11 @@
 
 #ifndef PIO_UNIT_TESTING
 
-#define TRAINING_MODE  // Comment this line to switch to normal mode
 //-------------------------------------
 // LIBRARIES
 //-------------------------------------
+#include "config.h"  // Include global configuration
+
 #include <stdio.h>
 #include <stdint.h> // To handle string conversion
 
@@ -139,7 +140,7 @@ void loop() {
     ReadGyro(datafile,gyro_bias);       // Read data from gyroscope / acceloremeter (100Hz)
 
     // store data in json
-    collectData(datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());
+    collectData(targetLabel ,datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());
 
     counter100++;
 
