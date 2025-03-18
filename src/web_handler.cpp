@@ -36,6 +36,15 @@ void handleStatus() {
     server.send(200, "text/plain", isAcquiring ? "RUNNING" : "STOPPED");
 }
 
+void StartWebServer() {
+    server.on("/", handleRoot);
+    server.on("/start", handleStart);
+    server.on("/stop", handleStop);
+    server.on("/status", handleStatus);
+
+    server.begin();
+}
+
 //######################################
 // Web Server for Training Data Acquisition
 //######################################

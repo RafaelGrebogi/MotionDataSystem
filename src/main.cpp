@@ -6,6 +6,9 @@
 //-------------------------------------
 #include "config.h"  // Include global configuration
 
+bool TRAINING_MODE = false;  // Default mode
+
+
 #include <stdio.h>
 #include <stdint.h> // To handle string conversion
 
@@ -86,6 +89,19 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Initialising...");
 
+
+  pinMode(TRAINING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
+
+  // Read the GPIO pin to determine mode
+  if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
+      TRAINING_MODE = true;
+      Serial.println(" Training Mode ENABLED (GPIO LOW)");
+  } else {
+      TRAINING_MODE = false;
+      Serial.println(" Normal Mode ENABLED (GPIO HIGH)");
+  }
+
+
   // Set CPU frequency
   setCpuFrequencyMhz(80);
   Serial.print("CPU Frequency (MHz): ");
@@ -104,11 +120,11 @@ void setup() {
   initiliaseFirebase();
 
   // Initialise WebServer
-  #ifdef TRAINING_MODE
+  if(TRAINING_MODE){
     StartWebServerTRAIN();
-  #else
+  }else{
     StartWebServer();
-  #endif
+  }
 
   // Initialise MPU6050
   StartMPU6050();
