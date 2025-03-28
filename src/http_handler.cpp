@@ -69,13 +69,13 @@ void sendDataToFirebase(String jsonData) {
   json.setJsonData(jsonData);  // Convert String to FirebaseJson
 
   char databasePath[80];
-  #ifdef TRAINING_MODE
+  if(TRAINING_MODE){
   // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
     sprintf(databasePath, "%s%s","/ESP32_Develop/TrainingDataset/",msgID);  
-  #else
+  }else{
   // No target labels will be included in this mode
     sprintf(databasePath, "%s%s","/ESP32_Develop/Data/",msgID);  // Create dataset with no target
-  #endif
+  }
 //   sprintf(databasePath, "%s%s","/ESP32_Develop/Data/",msgID);
 
 

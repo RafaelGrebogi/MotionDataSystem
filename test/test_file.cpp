@@ -18,7 +18,7 @@ extern int dataCount;
 extern hw_timer_t *My_timer;
 
 
-
+bool TRAINING_MODE = false;
 
 
 //============================

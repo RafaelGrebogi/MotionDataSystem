@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+// #include "json_handler.h"
 
 extern WebServer server;  // Declare the web server globally
 extern bool isAcquiring;
@@ -22,6 +23,7 @@ void handleTrainingRoot();
 void handleTrainStart();
 void handleTrainStop();
 void handleTrainStatus();
+void handleTrainInfo();
 
 // Functions for web server Unit Test
 void test_handleStart();

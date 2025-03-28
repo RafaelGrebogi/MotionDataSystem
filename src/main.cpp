@@ -95,10 +95,10 @@ void setup() {
   // Read the GPIO pin to determine mode
   if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
       TRAINING_MODE = true;
-      Serial.println(" Training Mode ENABLED (GPIO LOW)");
+      Serial.println(" Training Mode ENABLED (GPIO HIGH)");
   } else {
       TRAINING_MODE = false;
-      Serial.println(" Normal Mode ENABLED (GPIO HIGH)");
+      Serial.println(" Normal Mode ENABLED (GPIO LOW)");
   }
 
 

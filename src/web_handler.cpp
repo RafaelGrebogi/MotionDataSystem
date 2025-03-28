@@ -6,8 +6,13 @@ WebServer server(80);  // Creates a web server that listens on port 80 (default 
 
 extern hw_timer_t *My_timer;
 
-bool isAcquiring = false;
+// 'Training mode' variables 
+extern int msgCounter;
+unsigned long acquisitionStartMillis = 0;
 String targetLabel = "Normal Walk";  // Default target label
+
+bool isAcquiring = false;
+
 
 void handleRoot() {
     String html = "<html><body>";
@@ -53,6 +58,7 @@ void handleTrainingRoot() {
     String html = "<html><body>";
     html += "<h2>ESP32 Training Data Acquisition</h2>";
     html += "<p>Status: <span id='train_status'>STOPPED</span></p>";
+    html += "<p>Acquisition Info: <span id='info'>Time: 0s | Messages Sent: 0</span></p>";
     
     // Radio buttons for target selection
     html += "<p>Select Label:</p>";
@@ -68,43 +74,62 @@ void handleTrainingRoot() {
     html += "  let label = document.querySelector('input[name=label]:checked').value;";
     html += "  fetch('/train_start?label=' + encodeURIComponent(label));";
     html += "}";
-    
-    // Status updates every 2 seconds
-    html += "setInterval(()=>fetch('/train_status').then(r=>r.text()).then(t=>document.getElementById('train_status').innerText=t),2000);";
-    html += "</script>";
 
+    // Single interval that updates both status and info every second
+    html += "setInterval(()=>{";
+    html += "fetch('/train_status').then(r=>r.text()).then(t=>document.getElementById('train_status').innerText=t);";
+    html += "fetch('/train_info').then(r=>r.text()).then(t=>document.getElementById('info').innerText=t);";
+    html += "}, 1000);";
+
+    html += "</script>";
     html += "</body></html>";
+
     server.send(200, "text/html", html);
 }
 
+//#####################
 void handleTrainStart() {
     if (server.hasArg("label")) {
         targetLabel = server.arg("label");
     }
     isAcquiring = true;
     timerAlarmEnable(My_timer);
+    acquisitionStartMillis = millis();
     server.send(200, "text/plain", "Training STARTED with label: " + targetLabel);
 }
-
+//#####################
+void handleTrainInfo() {
+    String response = "";
+    if (isAcquiring) {
+        unsigned long currentMillis = millis();
+        unsigned long elapsedSeconds = (currentMillis - acquisitionStartMillis) / 1000;
+        response = "Time: " + String(elapsedSeconds) + "s | Messages Sent: " + String(msgCounter);
+    } else {
+        response = "Time: 0s | Messages Sent: " + String(msgCounter);
+    }
+    server.send(200, "text/plain", response);
+}
+//#####################
 void handleTrainStop() {
     isAcquiring = false;
     timerAlarmDisable(My_timer);
     server.send(200, "text/plain", "Training STOPPED");
 }
-
+//#####################
 void handleTrainStatus() {
     String response = isAcquiring ? "RUNNING - " + targetLabel : "STOPPED";
     server.send(200, "text/plain", response);
 }
-
+//#####################
 void StartWebServerTRAIN() {
     server.on("/", handleTrainingRoot);
     server.on("/train_start", handleTrainStart);
     server.on("/train_stop", handleTrainStop);
     server.on("/train_status", handleTrainStatus);
+    server.on("/train_info", handleTrainInfo);
     server.begin();
 }
-
+//#####################
 
 
 
