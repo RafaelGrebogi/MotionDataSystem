@@ -87,11 +87,12 @@ void setup() {
   // put your setup code here, to run once:
     // Initialise Serial0 to show in Terminal
   Serial.begin(115200);
-  Serial.println("Initialising...");
+  Serial.println(" ");
+  Serial.println(" Initialising...");
 
 
   pinMode(TRAINING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
-
+  
   // Read the GPIO pin to determine mode
   if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
       TRAINING_MODE = true;
@@ -113,18 +114,20 @@ void setup() {
   // Initialise Wi-Fi
   ConnectToWifi();
 
-  // Config device to get current time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Get time from NTP
-
-  // Initialise Firebase
-  initiliaseFirebase();
-
   // Initialise WebServer
   if(TRAINING_MODE){
     StartWebServerTRAIN();
   }else{
     StartWebServer();
   }
+
+  // Config device to get current time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Get time from NTP
+
+  // Initialise Firebase
+  initiliaseFirebase();
+
+
 
   // Initialise MPU6050
   StartMPU6050();
@@ -144,8 +147,15 @@ void setup() {
   timerAlarmWrite(My_timer, 10000, true);  //  100Hz interrupt (10ms interval)
   
   Serial.println("System Initialised!");
+
+  isInitialised = true;
+
 }
 
+
+
+
+// ##############################
 void loop() {
 
   server.handleClient();

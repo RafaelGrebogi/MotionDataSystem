@@ -12,9 +12,15 @@ unsigned long acquisitionStartMillis = 0;
 String targetLabel = "Normal Walk";  // Default target label
 
 bool isAcquiring = false;
+bool isInitialised = false;
 
 
 void handleRoot() {
+    if (!isInitialised) {
+        handleInitPage();
+        return;
+    }
+
     String html = "<html><body>";
     html += "<h2>ESP32 Data Acquisition</h2>";
     html += "<p>Status: <span id='status'>STOPPED</span></p>";
@@ -50,11 +56,27 @@ void StartWebServer() {
     server.begin();
 }
 
+void handleInitPage() {
+    String html = "<html><body>";
+    html += "<h2>System Initialising...</h2>";
+    html += "<p>Please wait while the ESP32 gets everything ready.</p>";
+    html += "<script>";
+    html += "setTimeout(() => { location.reload(); }, 2000);";  // Auto-refresh every 2 seconds
+    html += "</script>";
+    html += "</body></html>";
+    server.send(200, "text/html", html);
+}
+
 //######################################
 // Web Server for Training Data Acquisition
 //######################################
 
 void handleTrainingRoot() {
+    if (!isInitialised) {
+        handleInitPage();
+        return;
+    }
+
     String html = "<html><body>";
     html += "<h2>ESP32 Training Data Acquisition</h2>";
     html += "<p>Status: <span id='train_status'>STOPPED</span></p>";
