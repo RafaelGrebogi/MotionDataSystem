@@ -62,6 +62,18 @@ const long gmtOffset_sec = 10*3600;  // Adjust for your timezone
 const int daylightOffset_sec = 3600;
 
 
+
+//-------------------------------------
+// Functions 
+//-------------------------------------
+
+// Bridging function
+void safeStopFastAPI() {
+  stopFastAPIConnection();
+}
+
+
+
 //-------------------------------------
 // INTERRUPTION SERVICE ROUTINE VARIABLES 
 //-------------------------------------
@@ -69,6 +81,7 @@ const int daylightOffset_sec = 3600;
 hw_timer_t *My_timer = NULL;
 bool ISRTimer0 = false;
 uint8_t counter100 = 0;
+
 
 
 //----------------------------------------------------------------- 

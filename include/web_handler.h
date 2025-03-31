@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include "http_handler.h"
+// #include "http_handler.h"
 // #include "json_handler.h"
 
 extern WebServer server;  // Declare the web server globally
@@ -25,6 +25,8 @@ void handleTrainStart();
 void handleTrainStop();
 void handleTrainStatus();
 void handleTrainInfo();
+
+extern void safeStopFastAPI();
 
 // Functions for web server Unit Test
 void test_handleStart();

@@ -16,7 +16,6 @@
 #define FASTAPI_IP_TRIGGER "http://192.168.20.10:8000/trigger-training"
 
 
-
 extern FirebaseData fbdo;  // Firebase data object
 extern FirebaseAuth auth;
 extern FirebaseConfig config;
