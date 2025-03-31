@@ -116,6 +116,9 @@ void setup() {
   // Config device to get current time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Get time from NTP
 
+  // Prepare HTTP connection
+  startFastAPIConnection();    
+
   // Initialise Firebase
   initiliaseFirebase();
 

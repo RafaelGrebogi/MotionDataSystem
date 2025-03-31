@@ -33,6 +33,7 @@ void handleStart() {
 
 void handleStop() {
     isAcquiring = false;
+    stopFastAPIConnection();
     timerAlarmDisable(My_timer);
     server.send(200, "text/plain", "Acquisition STOPPED");
 }
@@ -113,6 +114,7 @@ void handleTrainInfo() {
 void handleTrainStop() {
     isAcquiring = false;
     timerAlarmDisable(My_timer);
+    stopFastAPIConnection();
     server.send(200, "text/plain", "Training STOPPED");
 }
 //#####################

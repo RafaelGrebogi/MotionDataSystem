@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include "http_handler.h"
 // #include "json_handler.h"
 
 extern WebServer server;  // Declare the web server globally
