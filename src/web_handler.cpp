@@ -18,12 +18,29 @@ void handleRoot() {
     String html = "<html><body>";
     html += "<h2>ESP32 Data Acquisition</h2>";
     html += "<p>Status: <span id='status'>STOPPED</span></p>";
-    html += "<button onclick=\"fetch('/start')\">START</button>";
-    html += "<button onclick=\"fetch('/stop')\">STOP</button>";
-    html += "<script>setInterval(()=>fetch('/status').then(r=>r.text()).then(t=>document.getElementById('status').innerText=t),2000);</script>";
+    html += "<button onclick=\"calibrate()\">CALIBRATE</button>";
+    html += "<button id='startBtn' onclick=\"fetch('/start')\">START</button>";
+    html += "<button id='stopBtn' onclick=\"fetch('/stop')\">STOP</button>";
+    html += "<p id='message'></p>";
+
+    html += "<script>";
+    html += "function calibrate() {";
+    html += "document.getElementById('message').innerText = 'Calibrating... Please stand still.';";
+    html += "document.getElementById('startBtn').disabled = true;";
+    html += "document.getElementById('stopBtn').disabled = true;";
+    html += "fetch('/calibrate').then(r => r.text()).then(t => {";
+    html += "  document.getElementById('message').innerText = t;";
+    html += "  document.getElementById('startBtn').disabled = false;";
+    html += "  document.getElementById('stopBtn').disabled = false;";
+    html += "});";
+    html += "}";
+    html += "setInterval(()=>fetch('/status').then(r=>r.text()).then(t=>document.getElementById('status').innerText=t),2000);";
+    html += "</script>";
+
     html += "</body></html>";
     server.send(200, "text/html", html);
 }
+
 
 void handleStart() {
     isAcquiring = true;
@@ -47,6 +64,7 @@ void StartWebServer() {
     server.on("/start", handleStart);
     server.on("/stop", handleStop);
     server.on("/status", handleStatus);
+    server.on("/calibrate", handleCalibration);  
 
     server.begin();
 }
@@ -58,28 +76,41 @@ void StartWebServer() {
 void handleTrainingRoot() {
     String html = "<html><body>";
     html += "<h2>ESP32 Training Data Acquisition</h2>";
+    html += "<button onclick=\"calibrate()\">CALIBRATE</button><br><br>";
     html += "<p>Status: <span id='train_status'>STOPPED</span></p>";
     html += "<p>Acquisition Info: <span id='info'>Time: 0s | Messages Sent: 0</span></p>";
-    
-    // Radio buttons for target selection
+
+    // Radio buttons
     html += "<p>Select Label:</p>";
     html += "<input type='radio' name='label' value='Normal Walk' checked> Normal Walk<br>";
     html += "<input type='radio' name='label' value='Limping'> Limping<br>";
-    
-    html += "<button onclick=\"startTraining()\">START</button>";
-    html += "<button onclick=\"fetch('/train_stop')\">STOP</button>";
 
-    // JavaScript for handling Start button with selected label
+    // Add IDs and initially disable start/stop
+    html += "<button id='startBtn' onclick=\"startTraining()\" disabled>START</button>";
+    html += "<button id='stopBtn' onclick=\"fetch('/train_stop')\" disabled>STOP</button>";
+
     html += "<script>";
+    
     html += "function startTraining() {";
     html += "  let label = document.querySelector('input[name=label]:checked').value;";
     html += "  fetch('/train_start?label=' + encodeURIComponent(label));";
     html += "}";
 
-    // Single interval that updates both status and info every second
+    // CALIBRATE function disables during calibration, enables on success
+    html += "function calibrate() {";
+    html += "  document.getElementById('train_status').innerText = 'Calibrating...';";
+    html += "  document.getElementById('startBtn').disabled = true;";
+    html += "  document.getElementById('stopBtn').disabled = true;";
+    html += "  fetch('/calibrate').then(r => r.text()).then(t => {";
+    html += "    document.getElementById('train_status').innerHTML = t;";
+    html += "    document.getElementById('startBtn').disabled = false;";
+    html += "    document.getElementById('stopBtn').disabled = false;";
+    html += "  });";
+    html += "}";
+
     html += "setInterval(()=>{";
-    html += "fetch('/train_status').then(r=>r.text()).then(t=>document.getElementById('train_status').innerText=t);";
-    html += "fetch('/train_info').then(r=>r.text()).then(t=>document.getElementById('info').innerText=t);";
+    html += "  fetch('/train_status').then(r=>r.text()).then(t=>document.getElementById('train_status').innerText=t);";
+    html += "  fetch('/train_info').then(r=>r.text()).then(t=>document.getElementById('info').innerText=t);";
     html += "}, 1000);";
 
     html += "</script>";
@@ -87,6 +118,48 @@ void handleTrainingRoot() {
 
     server.send(200, "text/html", html);
 }
+
+
+// void handleTrainingRoot() {
+//     String html = "<html><body>";
+//     html += "<h2>ESP32 Training Data Acquisition</h2>";
+//     html += "<button onclick=\"calibrate()\">CALIBRATE</button><br><br>";
+//     html += "<p>Status: <span id='train_status'>STOPPED</span></p>";
+//     html += "<p>Acquisition Info: <span id='info'>Time: 0s | Messages Sent: 0</span></p>";
+    
+//     // Radio buttons for target selection
+//     html += "<p>Select Label:</p>";
+//     html += "<input type='radio' name='label' value='Normal Walk' checked> Normal Walk<br>";
+//     html += "<input type='radio' name='label' value='Limping'> Limping<br>";
+    
+//     html += "<button onclick=\"startTraining()\">START</button>";
+//     html += "<button onclick=\"fetch('/train_stop')\">STOP</button>";
+
+//     // JavaScript for handling Start button with selected label
+//     html += "<script>";
+//     html += "function startTraining() {";
+//     html += "  let label = document.querySelector('input[name=label]:checked').value;";
+//     html += "  fetch('/train_start?label=' + encodeURIComponent(label));";
+//     html += "}";
+
+//     // Single interval that updates both status and info every second
+//     html += "setInterval(()=>{";
+//     html += "fetch('/train_status').then(r=>r.text()).then(t=>document.getElementById('train_status').innerText=t);";
+//     html += "fetch('/train_info').then(r=>r.text()).then(t=>document.getElementById('info').innerText=t);";
+//     html += "}, 1000);";
+
+//     html += "function calibrate() {";
+//     html += "  document.getElementById('train_status').innerText = 'Calibrating...';";
+//     html += "  fetch('/calibrate').then(r => r.text()).then(t => {";
+//     html += "    document.getElementById('train_status').innerText = t;";
+//     html += "  });";
+//     html += "}";
+
+//     html += "</script>";
+//     html += "</body></html>";
+
+//     server.send(200, "text/html", html);
+// }
 
 //#####################
 void handleTrainStart() {
@@ -129,72 +202,20 @@ void StartWebServerTRAIN() {
     server.on("/train_stop", handleTrainStop);
     server.on("/train_status", handleTrainStatus);
     server.on("/train_info", handleTrainInfo);
+    server.on("/calibrate", handleCalibration);  
     server.begin();
 }
 //#####################
 
 
 
-// #include "web_handler.h"
-
-// // hw_timer_t *My_timer = NULL;
-// extern hw_timer_t *My_timer;
-
-// WebServer server(80);  // Creates a web server that listens on port 80 (default for HTTP)
-// bool isAcquiring = false; 
-
-
-
-// void handleRoot() {
-//     String html = "<html><body>";
-//     html += "<h2>ESP32 Data Acquisition</h2>";
-//     html += "<p>Status: <span id='status'>STOPPED</span></p>";
-//     html += "<button onclick=\"fetch('/start')\">START</button>";
-//     html += "<button onclick=\"fetch('/stop')\">STOP</button>";
-//     html += "<script>setInterval(()=>fetch('/status').then(r=>r.text()).then(t=>document.getElementById('status').innerText=t),2000);</script>";
-//     html += "</body></html>";
-//     server.send(200, "text/html", html);
-// }
-
-// void handleStart() {
-//     isAcquiring = true;
-//     timerAlarmEnable(My_timer); //Just Enabl
-//     server.send(200, "text/plain", "Acquisition STARTED");
-// }
-
-// void handleStop() {
-//     isAcquiring = false;
-//     timerAlarmDisable(My_timer);
-//     server.send(200, "text/plain", "Acquisition STOPPED");
-// }
-
-// void handleStatus() {
-//     server.send(200, "text/plain", isAcquiring ? "RUNNING" : "STOPPED");  // Placeholder, will update later
-// }
-
-// void StartWebServer() {
-//     server.on("/", handleRoot);
-//     server.on("/start", handleStart);
-//     server.on("/stop", handleStop);
-//     server.on("/status", handleStatus);
-
-//     server.begin();
-// }
-
-// //######################################
-// // Web Server to acquire training subset
-// //######################################
-
-// void StartWebServerTRAIN() {
-//     // server.on("/", handleRoot);
-//     // server.on("/start", handleStart);
-//     // server.on("/stop", handleStop);
-//     // server.on("/status", handleStatus);
-
-//     server.begin();
-// }
-
-
+void handleCalibration() {
+    CalibrateAccelerometer(500);  // <-- Your calibration logic
+    String result = "Calibration complete<br>";
+    result += "TiltX: " + String(tiltX * 180.0 / PI, 2) + "°<br>";
+    result += "TiltY: " + String(tiltY * 180.0 / PI, 2) + "°";
+    server.send(200, "text/html", result);
+}
 
 
 

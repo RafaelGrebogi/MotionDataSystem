@@ -34,6 +34,7 @@ bool TRAINING_MODE = false;  // Default mode
 #include "http_handler.h"
 #include "web_handler.h"
 #include "json_handler.h"
+#include "calibration_handler.h"
 
 // WiFi library
 #include <WiFi.h>
