@@ -70,8 +70,8 @@ void sendDataToFirebase(String jsonData) {
         Serial.println(fbdo.errorReason());
       } 
 
-      // Send 'complete' flag to inform FastAPI of data available
-      sendCompleteFlag();
+      
+
   }
 }
 
@@ -84,8 +84,29 @@ void sendCompleteFlag() {
   if (!Firebase.RTDB.setJSON(&fbdo, FIREBASE_CONTROL_PATH, &json)) {
     Serial.println(fbdo.errorReason());
   }
-  
+
 }
+
+
+
+//#################################################################
+void triggerFastAPI() {
+  HTTPClient http;
+  http.begin(FASTAPI_IP_TRIGGER);
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(5000);  // 5sec
+  
+  int httpCode = http.POST("");  // Send empty body
+
+  if (httpCode > 0) {
+    Serial.printf("✅ Trigger sent to FastAPI: %d\n", httpCode);
+  } else {
+    Serial.printf("❌ Failed to trigger FastAPI: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+}
+
 
 //#################################################################
 void debugInternetConnection(){
