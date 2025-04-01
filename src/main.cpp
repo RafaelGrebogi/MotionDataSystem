@@ -4,6 +4,11 @@
 //-------------------------------------
 // LIBRARIES
 //-------------------------------------
+#include "config.h"  // Include global configuration
+
+bool TRAINING_MODE = false;  // Default mode
+
+
 #include <stdio.h>
 #include <stdint.h> // To handle string conversion
 
@@ -84,6 +89,19 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Initialising...");
 
+
+  pinMode(TRAINING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
+
+  // Read the GPIO pin to determine mode
+  if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
+      TRAINING_MODE = true;
+      Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+  } else {
+      TRAINING_MODE = false;
+      Serial.println(" Normal Mode ENABLED (GPIO LOW)");
+  }
+
+
   // Set CPU frequency
   setCpuFrequencyMhz(80);
   Serial.print("CPU Frequency (MHz): ");
@@ -102,7 +120,11 @@ void setup() {
   initiliaseFirebase();
 
   // Initialise WebServer
-  StartWebServer();
+  if(TRAINING_MODE){
+    StartWebServerTRAIN();
+  }else{
+    StartWebServer();
+  }
 
   // Initialise MPU6050
   StartMPU6050();
@@ -134,7 +156,7 @@ void loop() {
     ReadGyro(datafile,gyro_bias);       // Read data from gyroscope / acceloremeter (100Hz)
 
     // store data in json
-    collectData(datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());
+    collectData(targetLabel ,datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());
 
     counter100++;
 

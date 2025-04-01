@@ -3,17 +3,15 @@
 
 #include <Arduino.h>
 #include <HTTPClient.h>
+#include "time.h"
 #include "api_credentials.h"
 #include "json_handler.h"
 
 #include <Firebase_ESP_Client.h>
-// #include <json/FirebaseJson.h>
 
-// //Provide the token generation process info.
-// #include "addons/TokenHelper.h"
-// //Provide the RTDB payload printing info and other helper functions.
-// #include "addons/RTDBHelper.h"
-
+#define FIREBASE_CONTROL_PATH "/ControlFlag/"
+#define FIREBASE_TRAINING_PATH "/ESP32_Develop/TrainingDataset/"
+#define FIREBASE_PRODUCTION_PATH "/ESP32_Develop/Data/"
 
 extern FirebaseData fbdo;  // Firebase data object
 extern FirebaseAuth auth;
@@ -23,7 +21,7 @@ extern FirebaseConfig config;
 
 void initiliaseFirebase();
 void sendDataToFirebase(String jsonData);
-
+void sendCompleteFlag();
 void debugInternetConnection();
 
 #endif  // HTTP_HANDLER_H

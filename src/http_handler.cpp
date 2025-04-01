@@ -1,6 +1,6 @@
 #include "http_handler.h"
 #include "wifi_handler.h"
-
+#include "config.h"  // Include global configuration
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -25,14 +25,10 @@ void initiliaseFirebase(){
   // Assign the database URL
   config.database_url = FirebaseBaseUrl;
 
-
   // Assign service account credentials
   config.service_account.data.project_id = FirebaseProject_id;
   config.service_account.data.client_email = FirebaseClient_email;
   config.service_account.data.private_key = PRIVATE_KEY_STR;
-
-
-
 
   /* Assign the callback function for the long running token generation task */
   config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
@@ -40,33 +36,14 @@ void initiliaseFirebase(){
   Firebase.begin(&config, &auth);
   Firebase.reconnectNetwork(true);
 
-  // $$$$$$$$ DEBUG PROCEDURE $$$$$$$$$$$$
-  // Serial.print("API Key: ");
-  // Serial.println(config.api_key.c_str());
-  
-  // Serial.print("Database URL: ");
-  // Serial.println(FirebaseBaseUrl);
-  // delay(5000);
+
 
   debugInternetConnection();
 
   if (Firebase.ready()) {
     Serial.println("✅ Firebase successfully initialized.");
 } else {
-    Serial.println("❌ Firebase initialization failed. Debugging...");
-
-    // Print authentication errors
-    if (config.signer.tokens.status == token_status_error) {
-        Serial.print("Firebase Auth Error: ");
-        Serial.println(config.signer.tokens.error.message.c_str());
-    }
-
-    // Check if WiFi is connected
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("❌ WiFi is NOT connected. Firebase cannot initialize.");
-    } else {
-        Serial.println("✅ WiFi is connected, but Firebase is not ready.");
-    }
+    Serial.println("❌ Firebase initialization failed.");
 }
 
 
@@ -77,21 +54,40 @@ void sendDataToFirebase(String jsonData) {
   FirebaseJson json;
   json.setJsonData(jsonData);  // Convert String to FirebaseJson
 
-  char databasePath[50];
-  sprintf(databasePath, "%s%s","/ESP32_Develop/Data/",msgID);
+  char databasePath[80];
+  if(TRAINING_MODE){
+  // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
+    sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID);  
+  }else{
+  // No target labels will be included in this mode
+    sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
+  }
+
 
 
   if (Firebase.ready()) {
-      if (Firebase.RTDB.setJSON(&fbdo, String(databasePath), &json)) {
-          // Serial.println(" Data sent to Firebase!");
-      } else {
-          Serial.print(" Firebase Error: ");
-          Serial.println(fbdo.errorReason());
-      }
+      if (!Firebase.RTDB.setJSON(&fbdo, String(databasePath), &json)) {
+        Serial.println(fbdo.errorReason());
+      } 
+
+      // Send 'complete' flag to inform FastAPI of data available
+      sendCompleteFlag();
   }
 }
-//#################################################################
 
+//#################################################################
+void sendCompleteFlag() {
+  FirebaseJson json;
+  json.set("complete", true); 
+  json.set("timestamp", getCurrentTimestamp());
+
+  if (!Firebase.RTDB.setJSON(&fbdo, FIREBASE_CONTROL_PATH, &json)) {
+    Serial.println(fbdo.errorReason());
+  }
+  
+}
+
+//#################################################################
 void debugInternetConnection(){
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("✅ WiFi is connected. Testing Internet access...");
@@ -134,5 +130,16 @@ void debugInternetConnection(){
 //     } else {
 //         Serial.println("WiFi Disconnected");
 //         return -1;
+//     }
+// }
+
+
+
+//#### Firebase debugging (if necessary)
+//     Serial.println("❌ Firebase initialization failed. Debugging...");
+//     // Print authentication errors
+//     if (config.signer.tokens.status == token_status_error) {
+//         Serial.print("Firebase Auth Error: ");
+//         Serial.println(config.signer.tokens.error.message.c_str());
 //     }
 // }

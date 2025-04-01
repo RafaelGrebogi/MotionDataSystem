@@ -1,5 +1,5 @@
 #include "json_handler.h"
-
+#include "config.h"  // Include global configuration
 
 char chipIDChar[16] = "";
 
@@ -9,6 +9,7 @@ char chipIDChar[16] = "";
 
 // Structure to store sensor data
 struct SensorData {
+    String targetLabel;
     float accelX, accelY, accelZ;
     float gyroX, gyroY, gyroZ;
     String timestamp;
@@ -26,9 +27,9 @@ String jsonDataReady;
 
 //#################################################################
 // Function to collect data
-void collectData(float ax, float ay, float az, float gx, float gy, float gz, String time) {
+void collectData(String targetLabel, float ax, float ay, float az, float gx, float gy, float gz, String time) {
     if (dataCount < BATCH_SIZE) {
-        sensorBuffer[dataCount++] = { ax, ay, az, gx, gy, gz, time };
+        sensorBuffer[dataCount++] = {targetLabel, ax, ay, az, gx, gy, gz, time };
     }
 
 
@@ -67,6 +68,13 @@ String prepareJsonPayload() {
         sample["gyro_x"] = sensorBuffer[i].gyroX;
         sample["gyro_y"] = sensorBuffer[i].gyroY;
         sample["gyro_z"] = sensorBuffer[i].gyroZ;
+        // Include target in each sample
+        if(TRAINING_MODE){
+            sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
+        }else{
+            sample["target"] = "";  // Empty when not in training mode
+        }
+
     }
 
     String jsonData;
