@@ -68,8 +68,12 @@ const int daylightOffset_sec = 3600;
 //-------------------------------------
 
 // Bridging function
-void safeStopFastAPI() {
-  stopFastAPIConnection();
+void safeTriggerFastAPI() {
+  // Send 'complete' flag to Firebase to inform FastAPI of data available
+  sendCompleteFlag();
+
+  // Trigger FastAPI to read data from Firebase
+  triggerFastAPI();
 }
 
 
@@ -128,9 +132,7 @@ void setup() {
 
   // Config device to get current time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Get time from NTP
-
-  // Prepare HTTP connection
-  startFastAPIConnection();    
+ 
 
   // Initialise Firebase
   initiliaseFirebase();

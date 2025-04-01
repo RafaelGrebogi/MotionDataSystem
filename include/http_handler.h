@@ -26,8 +26,6 @@ void initiliaseFirebase();
 void sendDataToFirebase(String jsonData);
 void sendCompleteFlag();
 void triggerFastAPI();
-void startFastAPIConnection();
-void stopFastAPIConnection();
 void debugInternetConnection();
 
 #endif  // HTTP_HANDLER_H

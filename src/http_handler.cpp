@@ -9,7 +9,7 @@
 
 
 // WiFiClient client;
-HTTPClient http;
+
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -70,11 +70,8 @@ void sendDataToFirebase(String jsonData) {
         Serial.println(fbdo.errorReason());
       } 
 
-      // Send 'complete' flag to inform FastAPI of data available
-      sendCompleteFlag();
+      
 
-      // Trigger FastAPI to read data from database
-      triggerFastAPI();
   }
 }
 
@@ -90,35 +87,24 @@ void sendCompleteFlag() {
 
 }
 
-//#################################################################
-void startFastAPIConnection() {
-  http.begin(client, FASTAPI_IP_TRIGGER);
-  http.addHeader("Content-Type", "application/json");
-  http.addHeader("Connection", "keep-alive");  // Keep it open
-}
-
-//#################################################################
-
-void stopFastAPIConnection() {
-  http.end();  // Frees memory and closes connection
-}
 
 
 //#################################################################
 void triggerFastAPI() {
-  // delay(50);
-  // HTTPClient http;
-  // http.begin(FASTAPI_IP_TRIGGER);
-  // http.addHeader("Content-Type", "application/json");
+  HTTPClient http;
+  http.begin(FASTAPI_IP_TRIGGER);
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(5000);  // 5sec
+  
   int httpCode = http.POST("");  // Send empty body
 
-  // if (httpCode > 0) {
-  //   Serial.printf("✅ Trigger sent to FastAPI: %d\n", httpCode);
-  // } else {
-  //   Serial.printf("❌ Failed to trigger FastAPI: %s\n", http.errorToString(httpCode).c_str());
-  // }
+  if (httpCode > 0) {
+    Serial.printf("✅ Trigger sent to FastAPI: %d\n", httpCode);
+  } else {
+    Serial.printf("❌ Failed to trigger FastAPI: %s\n", http.errorToString(httpCode).c_str());
+  }
 
-  // http.end();
+  http.end();
 }
 
 

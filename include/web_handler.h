@@ -26,7 +26,7 @@ void handleTrainStop();
 void handleTrainStatus();
 void handleTrainInfo();
 
-extern void safeStopFastAPI();
+extern void safeTriggerFastAPI();
 
 // Functions for web server Unit Test
 void test_handleStart();
