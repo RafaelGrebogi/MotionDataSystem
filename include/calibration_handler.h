@@ -13,6 +13,8 @@ extern float tiltX;
 extern float tiltY;
 extern bool isCalibrated;
 
+#define ACC_SCALE_FACTOR 4096.0
+
 extern Adafruit_MPU6050 mpu;
 extern sensors_event_t a, g, temp;
 

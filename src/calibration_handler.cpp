@@ -14,6 +14,7 @@ bool isCalibrated = false;
 
 
 
+
 void CalibrateAccelerometer(int samples) {
     float sumX = 0, sumY = 0, sumZ = 0;
 
@@ -32,8 +33,8 @@ void CalibrateAccelerometer(int samples) {
     float biasY = sumY / samples;
 
     // Convert to tilt angles
-    tiltX = asin(biasX / 16384.0);  // sagittal tilt
-    tiltY = asin(biasY / 16384.0);  // frontal tilt
+    tiltX = asin(biasX / ACC_SCALE_FACTOR);  // sagittal tilt
+    tiltY = asin(biasY / ACC_SCALE_FACTOR);  // frontal tilt
 
     sinTiltX = sin(tiltX);
     cosTiltX = cos(tiltX);

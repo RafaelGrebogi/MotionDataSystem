@@ -11,6 +11,7 @@ extern char msgID[50];
 
 // Define the number of samples per batch
 #define BATCH_SIZE 10
+
 extern int dataCount;
 extern int msgCounter;
 
