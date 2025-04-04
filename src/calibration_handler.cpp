@@ -13,13 +13,51 @@ float sinTiltY = 0, cosTiltY = 1;
 bool isCalibrated = false;
 
 
+void ReadAndPrintData(){
+
+    // Serial.println(" Tilt board. Start in 5s.");
+    // delay(5000);
+
+    mpu.getEvent(&a, &g, &temp);
+    /* Print out the values */
+    Serial.print("Acceleration X: ");
+    Serial.print(a.acceleration.x);
+    Serial.print(", Y: ");
+    Serial.print(a.acceleration.y);
+    Serial.print(", Z: ");
+    Serial.print(a.acceleration.z);
+    Serial.println(" m/s^2");
+
+    Serial.print("Rotation X: ");
+    Serial.print(g.gyro.x);
+    Serial.print(", Y: ");
+    Serial.print(g.gyro.y);
+    Serial.print(", Z: ");
+    Serial.print(g.gyro.z);
+    Serial.println(" rad/s");
+
+    Serial.print("Temperature: ");
+    Serial.print(temp.temperature);
+    Serial.println(" degC");
+
+    Serial.println("");
+
+    CalibrateAccelerometer(100);
+
+    Serial.println("DONE!");
+
+    delay(1000);
+
+}
+
+
+
 
 
 void CalibrateAccelerometer(int samples) {
     float sumX = 0, sumY = 0, sumZ = 0;
 
-    Serial.println(" Starting accelerometer calibration... Stand still.");
-    
+    Serial.println(" Starting accelerometer calibration... Hold still.");
 
     for (int i = 0; i < samples; i++) {
         mpu.getEvent(&a, &g, &temp);
@@ -31,10 +69,14 @@ void CalibrateAccelerometer(int samples) {
 
     float biasX = sumX / samples;
     float biasY = sumY / samples;
+    float biasZ = sumZ / samples;
 
-    // Convert to tilt angles
-    tiltX = asin(biasX / ACC_SCALE_FACTOR);  // sagittal tilt
-    tiltY = asin(biasY / ACC_SCALE_FACTOR);  // frontal tilt
+    // Compute tilt angles using atan2
+    // Sagittal (forward-back) tilt: rotation around Y (tiltX)
+    tiltX = atan2(biasX, sqrt(biasY * biasY + biasZ * biasZ));
+
+    // Frontal (side-to-side) tilt: rotation around X (tiltY)
+    tiltY = atan2(biasY, sqrt(biasX * biasX + biasZ * biasZ));
 
     sinTiltX = sin(tiltX);
     cosTiltX = cos(tiltX);
@@ -50,6 +92,7 @@ void CalibrateAccelerometer(int samples) {
 
 
 
+
 void GetCorrectedAcceleration(float x, float y, float z, float &xCorr, float &yCorr, float &zCorr) {
     if (!isCalibrated) {
         xCorr = x;
@@ -58,15 +101,17 @@ void GetCorrectedAcceleration(float x, float y, float z, float &xCorr, float &yC
         return;
     }
 
-    // Apply precomputed rotation correction
-    float z1 = z * cosTiltX - y * sinTiltX;
-    float y1 = z * sinTiltX + y * cosTiltX;
+    // First rotate around X-axis (tiltX - pitch correction)
+    float y1 = y * cosTiltX - z * sinTiltX;
+    float z1 = y * sinTiltX + z * cosTiltX;
 
-    float z2 = z1 * cosTiltY + x * sinTiltY;
-    float x1 = z1 * sinTiltY + x * cosTiltY;
+    // Then rotate around Y-axis (tiltY - roll correction)
+    float x1 = x * cosTiltY + z1 * sinTiltY;
+    float z2 = -x * sinTiltY + z1 * cosTiltY;
 
     xCorr = x1;
     yCorr = y1;
     zCorr = z2;
 }
+
 

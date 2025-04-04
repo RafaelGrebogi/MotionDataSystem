@@ -18,6 +18,8 @@ extern bool isCalibrated;
 extern Adafruit_MPU6050 mpu;
 extern sensors_event_t a, g, temp;
 
+void ReadAndPrintData();
+
 // Function to calibrate the accelerometer at rest
 void CalibrateAccelerometer(int samples = 100);
 
