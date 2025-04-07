@@ -7,7 +7,7 @@
 #include "config.h"  // Include global configuration
 
 bool TRAINING_MODE = false;  // Default mode
-bool TESTING_MODE = false;
+bool TESTING_MODE = true;
 
 
 #include <stdio.h>
@@ -145,11 +145,7 @@ void setup() {
 
   // Initialise WebServer
   if(TRAINING_MODE){
-    if(TESTING_MODE){
-      // StartWebServerTEST(); // Testing path
-    } else{
-      StartWebServerTRAIN(); // Training path
-    }
+    StartWebServerTRAIN(); // Training path
   }else{
     StartWebServer(); // Production path
   }
@@ -173,9 +169,10 @@ void setup() {
   
   Serial.println("System Initialised!");
 
-  while(1){
-    ReadAndPrintData();
-  }
+  // MPU6050 DEBUG FUNCTION
+  // while(1){
+  //   ReadAndPrintData();
+  // }
 
 
 
