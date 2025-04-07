@@ -53,7 +53,7 @@ bool TESTING_MODE = true;
 #include <FS.h>
 
 // Gyroscope bias variable
-GyroBias gyro_bias;
+// GyroBias gyroBias;
 
 // Chip ID number
 extern char chipIDChar[16];
@@ -154,12 +154,12 @@ void setup() {
   StartMPU6050();
 
   Serial.println("Calibrating Gyroscope...");
-  gyro_bias = CalibrateGyro();
+  gyroBias = CalibrateGyro();
 
   Serial.println("Calibration complete.");
-  Serial.print("Bias X: "); Serial.println(gyro_bias.x);
-  Serial.print("Bias Y: "); Serial.println(gyro_bias.y);
-  Serial.print("Bias Z: "); Serial.println(gyro_bias.z);
+  Serial.print("Bias X: "); Serial.println(gyroBias.x);
+  Serial.print("Bias Y: "); Serial.println(gyroBias.y);
+  Serial.print("Bias Z: "); Serial.println(gyroBias.z);
 
 
   // Initiliase Timer_0 for ISR
@@ -185,7 +185,7 @@ void loop() {
   // 100Hz
   if(ISRTimer0){                // Boolean var toggled in Timer0 interruption
 
-    ReadGyro(datafile,gyro_bias);       // Read data from gyroscope / acceloremeter (100Hz)
+    ReadGyro(datafile,gyroBias);       // Read data from gyroscope / acceloremeter (100Hz)
 
     // store data in json
     collectData(targetLabel ,datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());
