@@ -72,7 +72,7 @@ String prepareJsonPayload() {
         if(TRAINING_MODE){
             sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
         }else{
-            sample["target"] = "";  // Empty when not in training mode
+            sample["target"] = "";  // Empty when in production mode
         }
 
     }

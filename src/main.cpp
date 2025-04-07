@@ -7,6 +7,7 @@
 #include "config.h"  // Include global configuration
 
 bool TRAINING_MODE = false;  // Default mode
+bool TESTING_MODE = false;
 
 
 #include <stdio.h>
@@ -113,10 +114,14 @@ void setup() {
   // Read the GPIO pin to determine mode
   if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
       TRAINING_MODE = true;
-      Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+      if(TESTING_MODE){
+        Serial.println(" Testing Mode ENABLED (GPIO HIGH)");
+      } else{
+        Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+      }
   } else {
       TRAINING_MODE = false;
-      Serial.println(" Normal Mode ENABLED (GPIO LOW)");
+      Serial.println(" Production Mode ENABLED (GPIO LOW)");
   }
 
 
@@ -140,9 +145,13 @@ void setup() {
 
   // Initialise WebServer
   if(TRAINING_MODE){
-    StartWebServerTRAIN();
+    if(TESTING_MODE){
+      // StartWebServerTEST(); // Testing path
+    } else{
+      StartWebServerTRAIN(); // Training path
+    }
   }else{
-    StartWebServer();
+    StartWebServer(); // Production path
   }
 
   // Initialise MPU6050
