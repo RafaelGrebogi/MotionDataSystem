@@ -147,6 +147,7 @@ void setup() {
   if(TRAINING_MODE){
     StartWebServerTRAIN(); // Training path
   }else{
+    Serial.println("Production mode");
     StartWebServer(); // Production path
   }
 
