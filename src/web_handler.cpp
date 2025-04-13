@@ -19,36 +19,82 @@ void handleRoot() {
     html += "<h2>ESP32 Data Acquisition</h2>";
     html += "<p>Status: <span id='status'>STOPPED</span></p>";
     html += "<button onclick=\"calibrate()\">CALIBRATE</button>";
-    html += "<button id='startBtn' onclick=\"fetch('/start')\">START</button>";
-    html += "<button id='stopBtn' onclick=\"fetch('/stop')\">STOP</button>";
+    html += "<button id='startBtn' onclick=\"startAcquisition()\" disabled>START</button>";
+    html += "<button id='stopBtn' onclick=\"stopAcquisition()\" disabled>STOP</button>";
     html += "<p id='message'></p>";
 
     html += "<script>";
-    html += "function calibrate() {";
-    html += "document.getElementById('message').innerText = 'Calibrating... Please stand still.';";
-    html += "document.getElementById('startBtn').disabled = true;";
-    html += "document.getElementById('stopBtn').disabled = true;";
-    html += "fetch('/calibrate').then(r => r.text()).then(t => {";
-    html += "  document.getElementById('message').innerHTML = t;";
-    html += "  document.getElementById('startBtn').disabled = false;";
-    html += "  document.getElementById('stopBtn').disabled = false;";
-    html += "});";
-    html += "}";
-    html += "setInterval(()=>fetch('/status').then(r=>r.text()).then(t=>document.getElementById('status').innerText=t),500);";
-    html += "</script>";
+    html += "let statusInterval = null;";
+    html += "let isCalibrated = false;";
 
-    html += "setInterval(() => {";
-    html += "  fetch('/train_status').then(r => r.text()).then(t => {";
-    html += "    if (t.includes('Training') || t.includes('Testing')) {";
-    html += "      document.getElementById('status').innerText = 'Redirecting to Training/Testing page...';";
-    html += "      setTimeout(() => { window.location.href = '/'; }, 1000);";  // you can redirect to "/train" if you separate pages
-    html += "    }";
+    html += "function startAcquisition() {";
+    html += "  document.getElementById('startBtn').disabled = true;";
+    html += "  fetch('/start').then(() => {";
+    html += "    document.getElementById('stopBtn').disabled = false;";
     html += "  });";
-    html += "}, 2000);";
+    html += "}";
 
+    html += "function stopAcquisition() {";
+    html += "  document.getElementById('stopBtn').disabled = true;";
+    html += "  fetch('/stop').then(() => {";
+    html += "    if (isCalibrated) document.getElementById('startBtn').disabled = false;";
+    html += "  });";
+    html += "}";
+
+    html += "function calibrate() {";
+    html += "  if (statusInterval) clearInterval(statusInterval);";
+    html += "  document.getElementById('message').innerText = 'Calibrating... Please stand still.';";
+    html += "  document.getElementById('startBtn').disabled = true;";
+    html += "  document.getElementById('stopBtn').disabled = true;";
+    html += "  fetch('/calibrate').then(r => r.text()).then(t => {";
+    html += "    document.getElementById('message').innerHTML = t;";
+    html += "    isCalibrated = true;";
+    html += "    updateStatus();";
+    html += "    startPolling();";
+    html += "  });";
+    html += "}";
+
+    html += "function updateStatus() {";
+    html += "  fetch('/status').then(r => r.text()).then(t => {";
+    html += "    document.getElementById('status').innerText = t;";
+    html += "    updateButtons(t);";
+    html += "  });";
+    html += "}";
+
+    html += "function updateButtons(statusText) {";
+    html += "  let isRunning = (statusText || document.getElementById('status').innerText).includes('RUNNING');";
+    html += "  document.getElementById('startBtn').disabled = !isCalibrated || isRunning;";
+    html += "  document.getElementById('stopBtn').disabled = !isRunning;";
+    html += "}";
+
+    html += "function startPolling() {";
+    html += "  statusInterval = setInterval(updateStatus, 500);";
+    html += "}";
+
+    html += "window.onload = () => {";
+    html += "  updateButtons();";  // don't enable until calibrated
+    html += "};";
+
+    // html += "setInterval(() => {";
+    // html += "  fetch('/train_status').then(r => r.text()).then(t => {";
+    // html += "    if (t.includes('Training') || t.includes('Testing')) {";
+    // html += "      document.getElementById('status').innerText = 'Redirecting to Training/Testing page...';";
+    // html += "      setTimeout(() => { window.location.href = '/'; }, 1000);";
+    // html += "    }";
+    // html += "  });";
+    // html += "}, 2000);";
+
+    html += "</script>";
     html += "</body></html>";
+
     server.send(200, "text/html", html);
 }
+
+
+
+
+
+
 
 
 void handleStart() {
