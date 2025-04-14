@@ -210,8 +210,8 @@ void handleTrainingRoot() {
     html += "<p>Acquisition Info: <span id='info'>Time: 0s | Messages Sent: 0</span></p>";
 
     html += "<p>Select Label:</p>";
-    html += "<input type='radio' name='label' value='Normal Walk' checked> Normal Walk<br>";
-    html += "<input type='radio' name='label' value='Limping'> Limping<br>";
+    html += "<input type='radio' class='label-radio' name='label' value='Normal Walk' checked> Normal Walk<br>";
+    html += "<input type='radio' class='label-radio' name='label' value='Limping'> Limping<br>";    
 
     html += "<button id='startBtn' onclick=\"startTraining()\" disabled>START</button>";
     html += "<button id='stopBtn' onclick=\"fetch('/train_stop')\" disabled>STOP</button>";
@@ -267,6 +267,9 @@ void handleTrainingRoot() {
     html += "    }";
     html += "    document.getElementById('train_status').innerText = t;";
     html += "    document.getElementById('startBtn').disabled = t.startsWith('RUNNING');";
+    if (!TESTING_MODE) {
+        html += "    document.querySelectorAll('.label-radio').forEach(rb => rb.disabled = isRunning);";
+    }
     html += "  });";
     
     html += "  fetch('/train_info').then(r => r.text()).then(t => {";
@@ -278,6 +281,8 @@ void handleTrainingRoot() {
     html += "    document.getElementById('info').innerText = t;";
     html += "  });";
     html += "}";
+   
+    
     
 
     html += "</script>";
