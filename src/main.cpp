@@ -34,6 +34,7 @@ bool TRAINING_MODE = false;  // Default mode
 #include "http_handler.h"
 #include "web_handler.h"
 #include "json_handler.h"
+#include "calibration_handler.h"
 
 // WiFi library
 #include <WiFi.h>
@@ -162,6 +163,13 @@ void setup() {
   timerAlarmWrite(My_timer, 10000, true);  //  100Hz interrupt (10ms interval)
   
   Serial.println("System Initialised!");
+
+  while(1){
+    ReadAndPrintData();
+  }
+
+
+
 }
 
 void loop() {

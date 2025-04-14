@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include "calibration_handler.h"
 // #include "http_handler.h"
 // #include "json_handler.h"
 
@@ -25,6 +26,8 @@ void handleTrainStart();
 void handleTrainStop();
 void handleTrainStatus();
 void handleTrainInfo();
+
+void handleCalibration();
 
 extern void safeTriggerFastAPI();
 

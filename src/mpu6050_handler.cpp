@@ -91,32 +91,31 @@ void StartMPU6050() {
   
   //##############################################################
   // Read MPU6050
-void ReadGyro(DataFile &datafile, GyroBias &gyro_bias){
-  
-    
+  void ReadGyro(DataFile &datafile, GyroBias &gyro_bias) {
     mpu.getEvent(&a, &g, &temp);
-  
-    datafile.accelX = a.acceleration.x;
-    datafile.accelY = a.acceleration.y;
-    datafile.accelZ = a.acceleration.z;
 
-    // Apply calibration bias
+    // Apply accelerometer tilt correction
+    float correctedX, correctedY, correctedZ;
+    GetCorrectedAcceleration(
+        a.acceleration.x,
+        a.acceleration.y,
+        a.acceleration.z,
+        correctedX,
+        correctedY,
+        correctedZ
+    );
+
+    // Store corrected accelerometer data
+    datafile.accelX = correctedX;
+    datafile.accelY = correctedY;
+    datafile.accelZ = correctedZ;
+
+    // Apply gyroscope bias correction
     datafile.gyroX = g.gyro.x - gyro_bias.x;
     datafile.gyroY = g.gyro.y - gyro_bias.y;
     datafile.gyroZ = g.gyro.z - gyro_bias.z;
-
-   
-  
-    //sprintf(datafile.accelX,"%02f",a.acceleration.x); 
-    // Serial.println(datafile.accelX);
-    // Serial.println(datafile.accelY);
-    // Serial.println(datafile.accelZ);
-    // Serial.println(datafile.gyroX);
-    // Serial.println(datafile.gyroY);
-    // Serial.println(datafile.gyroZ);
-  
-  
 }
+
 
 //##############################################################
 GyroBias CalibrateGyro(){
