@@ -4,6 +4,21 @@
 char chipIDChar[16] = "";
 
 
+
+// struct GyroBias {
+//     float x;
+//     float y;
+//     float z;
+//   };
+// extern GyroBias gyroBias;
+GyroBias gyroBias;
+// struct AccelCorr {
+//     float sinTiltX, cosTiltX, sinTiltY, cosTiltY;
+//  };
+// extern AccelCorr accelCorr;
+AccelCorr accelCorr;
+
+
 // Define the number of samples per batch
 // #define BATCH_SIZE 10
 
@@ -57,6 +72,14 @@ String prepareJsonPayload() {
     doc["device_id"] = chipIDChar;
     doc["timestamp"] = getCurrentTimestamp();
     
+    JsonObject calibration = doc["calibration"].to<JsonObject>();
+    calibration["sin_tilt_x"] = accelCorr.sinTiltX;
+    calibration["cos_tilt_x"] = accelCorr.cosTiltX;
+    calibration["sin_tilt_y"] = accelCorr.sinTiltY;
+    calibration["cos_tilt_y"] = accelCorr.cosTiltY;
+    calibration["gyroBias_x"] = gyroBias.x;
+    calibration["gyroBias_y"] = gyroBias.y;
+    calibration["gyroBias_z"] = gyroBias.z;
 
     JsonArray samples = doc["samples"].to<JsonArray>();
     for (int i = 0; i < dataCount; i++) {
@@ -72,7 +95,7 @@ String prepareJsonPayload() {
         if(TRAINING_MODE){
             sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
         }else{
-            sample["target"] = "";  // Empty when not in training mode
+            sample["target"] = "";  // Empty when in production mode
         }
 
     }

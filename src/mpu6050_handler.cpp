@@ -8,7 +8,7 @@ extern bool ISRTimer0;
 
 DataFile datafile;
 
-
+struct GyroBias;
 
 
 
@@ -118,24 +118,24 @@ void StartMPU6050() {
 
 
 //##############################################################
-GyroBias CalibrateGyro(){
+// GyroBias CalibrateGyro(){
 
-    int counter = 0, num_samples = 1000; // Number of samples for calibration
-    float sum_x = 0, sum_y = 0, sum_z = 0;
+//     int counter = 0, num_samples = 1000; // Number of samples for calibration
+//     float sum_x = 0, sum_y = 0, sum_z = 0;
 
-    while(counter < num_samples){
-        mpu.getEvent(&a, &g, &temp);
-        counter++;
+//     while(counter < num_samples){
+//         mpu.getEvent(&a, &g, &temp);
+//         counter++;
  
-        sum_x += g.gyro.x;
-        sum_y += g.gyro.y;
-        sum_z += g.gyro.z;
+//         sum_x += g.gyro.x;
+//         sum_y += g.gyro.y;
+//         sum_z += g.gyro.z;
 
-        delay(10);
-    }
+//         delay(10);
+//     }
    
-  // Return bias as a struct
-  return {sum_x / num_samples, sum_y / num_samples, sum_z / num_samples};
-}
+//   // Return bias as a struct
+//   return {sum_x / num_samples, sum_y / num_samples, sum_z / num_samples};
+// }
   
   

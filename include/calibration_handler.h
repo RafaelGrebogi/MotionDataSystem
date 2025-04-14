@@ -18,7 +18,24 @@ extern bool isCalibrated;
 extern Adafruit_MPU6050 mpu;
 extern sensors_event_t a, g, temp;
 
+
+struct GyroBias {
+    float x;
+    float y;
+    float z;
+  };
+extern GyroBias gyroBias;
+
+struct AccelCorr {
+    float sinTiltX, cosTiltX, sinTiltY, cosTiltY;
+ };
+extern AccelCorr accelCorr;
+
+// Debug function
 void ReadAndPrintData();
+
+// Function to calibrate the gyroscope
+GyroBias CalibrateGyro();
 
 // Function to calibrate the accelerometer at rest
 void CalibrateAccelerometer(int samples = 100);

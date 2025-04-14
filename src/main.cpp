@@ -7,6 +7,7 @@
 #include "config.h"  // Include global configuration
 
 bool TRAINING_MODE = false;  // Default mode
+bool TESTING_MODE = true;
 
 
 #include <stdio.h>
@@ -52,7 +53,7 @@ bool TRAINING_MODE = false;  // Default mode
 #include <FS.h>
 
 // Gyroscope bias variable
-GyroBias gyro_bias;
+// GyroBias gyroBias;
 
 // Chip ID number
 extern char chipIDChar[16];
@@ -113,10 +114,14 @@ void setup() {
   // Read the GPIO pin to determine mode
   if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
       TRAINING_MODE = true;
-      Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+      if(TESTING_MODE){
+        Serial.println(" Testing Mode ENABLED (GPIO HIGH)");
+      } else{
+        Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+      }
   } else {
       TRAINING_MODE = false;
-      Serial.println(" Normal Mode ENABLED (GPIO LOW)");
+      Serial.println(" Production Mode ENABLED (GPIO LOW)");
   }
 
 
@@ -140,21 +145,21 @@ void setup() {
 
   // Initialise WebServer
   if(TRAINING_MODE){
-    StartWebServerTRAIN();
+    StartWebServerTRAIN(); // Training path
   }else{
-    StartWebServer();
+    StartWebServer(); // Production path
   }
 
   // Initialise MPU6050
   StartMPU6050();
 
   Serial.println("Calibrating Gyroscope...");
-  gyro_bias = CalibrateGyro();
+  gyroBias = CalibrateGyro();
 
   Serial.println("Calibration complete.");
-  Serial.print("Bias X: "); Serial.println(gyro_bias.x);
-  Serial.print("Bias Y: "); Serial.println(gyro_bias.y);
-  Serial.print("Bias Z: "); Serial.println(gyro_bias.z);
+  Serial.print("Bias X: "); Serial.println(gyroBias.x);
+  Serial.print("Bias Y: "); Serial.println(gyroBias.y);
+  Serial.print("Bias Z: "); Serial.println(gyroBias.z);
 
 
   // Initiliase Timer_0 for ISR
@@ -164,9 +169,10 @@ void setup() {
   
   Serial.println("System Initialised!");
 
-  while(1){
-    ReadAndPrintData();
-  }
+  // MPU6050 DEBUG FUNCTION
+  // while(1){
+  //   ReadAndPrintData();
+  // }
 
 
 
@@ -179,7 +185,7 @@ void loop() {
   // 100Hz
   if(ISRTimer0){                // Boolean var toggled in Timer0 interruption
 
-    ReadGyro(datafile,gyro_bias);       // Read data from gyroscope / acceloremeter (100Hz)
+    ReadGyro(datafile,gyroBias);       // Read data from gyroscope / acceloremeter (100Hz)
 
     // store data in json
     collectData(targetLabel ,datafile.accelX,datafile.accelY, datafile.accelZ, datafile.gyroX, datafile.gyroY, datafile.gyroZ, getCurrentTimestamp());

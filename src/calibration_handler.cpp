@@ -8,8 +8,8 @@
 
 // Calibration parameters
 float tiltX = 0, tiltY = 0;        // radians
-float sinTiltX = 0, cosTiltX = 1;
-float sinTiltY = 0, cosTiltY = 1;
+// float sinTiltX = 0, cosTiltX = 1;
+// float sinTiltY = 0, cosTiltY = 1;
 bool isCalibrated = false;
 
 
@@ -78,10 +78,10 @@ void CalibrateAccelerometer(int samples) {
     // Frontal (side-to-side) tilt: rotation around X (tiltY)
     tiltY = atan2(biasY, sqrt(biasX * biasX + biasZ * biasZ));
 
-    sinTiltX = sin(tiltX);
-    cosTiltX = cos(tiltX);
-    sinTiltY = sin(tiltY);
-    cosTiltY = cos(tiltY);
+    accelCorr.sinTiltX = sin(tiltX);
+    accelCorr.cosTiltX = cos(tiltX);
+    accelCorr.sinTiltY = sin(tiltY);
+    accelCorr.cosTiltY = cos(tiltY);
 
     isCalibrated = true;
 
@@ -102,12 +102,12 @@ void GetCorrectedAcceleration(float x, float y, float z, float &xCorr, float &yC
     }
 
     // First rotate around X-axis (tiltX - pitch correction)
-    float y1 = y * cosTiltX - z * sinTiltX;
-    float z1 = y * sinTiltX + z * cosTiltX;
+    float y1 = y * accelCorr.cosTiltX - z * accelCorr.sinTiltX;
+    float z1 = y * accelCorr.sinTiltX + z * accelCorr.cosTiltX;
 
     // Then rotate around Y-axis (tiltY - roll correction)
-    float x1 = x * cosTiltY + z1 * sinTiltY;
-    float z2 = -x * sinTiltY + z1 * cosTiltY;
+    float x1 = x * accelCorr.cosTiltY + z1 * accelCorr.sinTiltY;
+    float z2 = -x * accelCorr.sinTiltY + z1 * accelCorr.cosTiltY;
 
     xCorr = x1;
     yCorr = y1;
@@ -115,3 +115,23 @@ void GetCorrectedAcceleration(float x, float y, float z, float &xCorr, float &yC
 }
 
 
+//##############################################################
+GyroBias CalibrateGyro(){
+
+    int counter = 0, num_samples = 1000; // Number of samples for calibration
+    float sum_x = 0, sum_y = 0, sum_z = 0;
+
+    while(counter < num_samples){
+        mpu.getEvent(&a, &g, &temp);
+        counter++;
+ 
+        sum_x += g.gyro.x;
+        sum_y += g.gyro.y;
+        sum_z += g.gyro.z;
+
+        delay(10);
+    }
+   
+  // Return bias as a struct
+  return {sum_x / num_samples, sum_y / num_samples, sum_z / num_samples};
+}
