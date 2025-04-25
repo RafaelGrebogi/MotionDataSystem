@@ -8,7 +8,7 @@
 
 bool TRAINING_MODE = false;  // Default mode | This value is read from an input pin (GPIO)
 
-bool TESTING_MODE = false; // This value is hard-coded and can be modified
+bool TESTING_MODE = true; // This value is hard-coded and can be modified
 
 
 #include <stdio.h>
