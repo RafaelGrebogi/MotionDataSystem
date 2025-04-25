@@ -101,17 +101,29 @@ void GetCorrectedAcceleration(float x, float y, float z, float &xCorr, float &yC
         return;
     }
 
-    // First rotate around X-axis (tiltX - pitch correction)
-    float y1 = y * accelCorr.cosTiltX - z * accelCorr.sinTiltX;
-    float z1 = y * accelCorr.sinTiltX + z * accelCorr.cosTiltX;
+    float sx = accelCorr.sinTiltX;
+    float cx = accelCorr.cosTiltX;
+    float sy = accelCorr.sinTiltY;
+    float cy = accelCorr.cosTiltY;
 
-    // Then rotate around Y-axis (tiltY - roll correction)
-    float x1 = x * accelCorr.cosTiltY + z1 * accelCorr.sinTiltY;
-    float z2 = -x * accelCorr.sinTiltY + z1 * accelCorr.cosTiltY;
 
-    xCorr = x1;
-    yCorr = y1;
-    zCorr = z2;
+    // Full rotation matrix: R = Ry(tiltX) * Rx(tiltY)
+    float r11 =  cx;
+    float r12 =  sx * sy;
+    float r13 =  sx * cy;
+
+    float r21 =  0;
+    float r22 =      cy;
+    float r23 =     -sy;
+
+    float r31 = -sx;
+    float r32 =  cx * sy;
+    float r33 =  cx * cy;
+
+    // Apply the rotation matrix
+    xCorr = r11 * x + r12 * y + r13 * z;
+    yCorr = r21 * x + r22 * y + r23 * z;
+    zCorr = r31 * x + r32 * y + r33 * z;
 }
 
 
