@@ -117,12 +117,15 @@ void setup() {
       TRAINING_MODE = true;
       if(TESTING_MODE){
         Serial.println(" Testing Mode ENABLED (GPIO HIGH)");
+        currentMode = TESTING;
       } else{
         Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+        currentMode = TRAINING;
       }
   } else {
       TRAINING_MODE = false;
       Serial.println(" Production Mode ENABLED (GPIO LOW)");
+      currentMode = PRODUCTION;
   }
 
 
