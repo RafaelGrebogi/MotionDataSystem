@@ -15,6 +15,8 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
+OperationMode currentMode;
+
 char msgID[50];
 
 //#################################################################
@@ -92,7 +94,7 @@ void sendCompleteFlag() {
 //#################################################################
 void triggerFastAPI() {
   HTTPClient http;
-  
+
   String url = "http://192.168.20.10:8000/";
   if (currentMode == TRAINING) {
     url += "trigger-training";
