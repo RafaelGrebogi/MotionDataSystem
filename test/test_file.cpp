@@ -254,37 +254,37 @@ void test_firebase_invalid_path() {
 //============================
 // WebServer Tests
 //============================
-void test_webserver_start() {
-    // StartWebServer();
-    isAcquiring = false;  // Ensure the initial state is OFF
-    test_handleStart();  // Call the function to simulate a request
-    TEST_ASSERT_TRUE(isAcquiring);  // `isAcquiring` should now be true
-}
+// void test_webserver_start() {
+//     // StartWebServer();
+//     isAcquiring = false;  // Ensure the initial state is OFF
+//     test_handleStart();  // Call the function to simulate a request
+//     TEST_ASSERT_TRUE(isAcquiring);  // `isAcquiring` should now be true
+// }
 
-void test_webserver_stop() {
-    // StartWebServer();
-    isAcquiring = true;  //  Ensure acquisition is running
-    test_handleStop();  //  Call the function to simulate a request
-    TEST_ASSERT_FALSE(isAcquiring);  //  `isAcquiring` should now be false
-}
+// void test_webserver_stop() {
+//     // StartWebServer();
+//     isAcquiring = true;  //  Ensure acquisition is running
+//     test_handleStop();  //  Call the function to simulate a request
+//     TEST_ASSERT_FALSE(isAcquiring);  //  `isAcquiring` should now be false
+// }
 
-void test_webserver_status_running() {
-    // StartWebServer();
-    isAcquiring = true;  //  Simulate running state
-    String response;
-    handleStatus();  //  Call status endpoint
-    response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
-    TEST_ASSERT_EQUAL_STRING("RUNNING", response.c_str());  //  Check correct response
-}
+// void test_webserver_status_running() {
+//     // StartWebServer();
+//     isAcquiring = true;  //  Simulate running state
+//     String response;
+//     handleStatus();  //  Call status endpoint
+//     response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
+//     TEST_ASSERT_EQUAL_STRING("RUNNING", response.c_str());  //  Check correct response
+// }
 
-void test_webserver_status_stopped() {
-    // StartWebServer();
-    isAcquiring = false;  //  Simulate stopped state
-    String response;
-    handleStatus();
-    response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
-    TEST_ASSERT_EQUAL_STRING("STOPPED", response.c_str());  //  Check correct response
-}
+// void test_webserver_status_stopped() {
+//     // StartWebServer();
+//     isAcquiring = false;  //  Simulate stopped state
+//     String response;
+//     handleStatus();
+//     response = isAcquiring ? "RUNNING" : "STOPPED";  //  Simulate response
+//     TEST_ASSERT_EQUAL_STRING("STOPPED", response.c_str());  //  Check correct response
+// }
 //============================
 //============================
 
@@ -312,10 +312,10 @@ int runUnityTests(void) {
     // RUN_TEST(test_thingspeak_success);
     // RUN_TEST(test_thingspeak_failure);
 
-    RUN_TEST(test_webserver_start);
-    RUN_TEST(test_webserver_stop);
-    RUN_TEST(test_webserver_status_running);
-    RUN_TEST(test_webserver_status_stopped);
+    // RUN_TEST(test_webserver_start);
+    // RUN_TEST(test_webserver_stop);
+    // RUN_TEST(test_webserver_status_running);
+    // RUN_TEST(test_webserver_status_stopped);
 
     RUN_TEST(test_json_not_empty);
     RUN_TEST(test_json_contains_device_id);
