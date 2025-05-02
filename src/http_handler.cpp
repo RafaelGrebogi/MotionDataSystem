@@ -96,7 +96,9 @@ void triggerFastAPI() {
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // 5sec
   
-  int httpCode = http.POST("");  // Send empty body
+  char body[100];
+  snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+  int httpCode = http.POST(String(body));
 
   if (httpCode > 0) {
     Serial.printf("✅ Trigger sent to FastAPI: %d\n", httpCode);
