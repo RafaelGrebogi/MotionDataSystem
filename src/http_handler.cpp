@@ -15,6 +15,8 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
+OperationMode currentMode;
+
 char msgID[50];
 
 //#################################################################
@@ -92,7 +94,17 @@ void sendCompleteFlag() {
 //#################################################################
 void triggerFastAPI() {
   HTTPClient http;
-  http.begin(FASTAPI_IP_TRIGGER);
+
+  String url = "http://192.168.20.10:8000/";
+  if (currentMode == TRAINING) {
+    url += "trigger-training";
+  } else if (currentMode == TESTING) {
+    url += "trigger-testing";
+  } else if (currentMode == PRODUCTION) {
+    url += "trigger-production";
+  }
+
+  http.begin(url);
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // 5sec
   
