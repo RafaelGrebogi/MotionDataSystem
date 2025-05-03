@@ -108,6 +108,12 @@ void triggerFastAPI() {
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // 5sec
   
+
+  // // Simulate a different device for testing
+  // #ifdef FAKE_ID
+  //   snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_123");
+  // #endif
+
   char body[100];
   snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
   int httpCode = http.POST(String(body));
