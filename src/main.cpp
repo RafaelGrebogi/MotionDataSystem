@@ -8,7 +8,7 @@
 
 bool TRAINING_MODE = false;  // Default mode | This value is read from an input pin (GPIO)
 
-bool TESTING_MODE = true; // This value is hard-coded and can be modified
+bool TESTING_MODE = false; // This value is hard-coded and can be modified
 
 
 #include <stdio.h>
@@ -117,12 +117,15 @@ void setup() {
       TRAINING_MODE = true;
       if(TESTING_MODE){
         Serial.println(" Testing Mode ENABLED (GPIO HIGH)");
+        currentMode = TESTING;
       } else{
         Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+        currentMode = TRAINING;
       }
   } else {
       TRAINING_MODE = false;
       Serial.println(" Production Mode ENABLED (GPIO LOW)");
+      currentMode = PRODUCTION;
   }
 
 
