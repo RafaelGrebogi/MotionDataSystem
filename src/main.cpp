@@ -141,7 +141,7 @@ void setup() {
   
   #ifdef FAKE_ID
   // Simulate a different device for testing
-    snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_123");
+    snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_1");
     Serial.printf("ESP32 ID = %s\n", chipIDChar);
   #else
     // Get Chip ID

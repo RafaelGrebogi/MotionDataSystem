@@ -18,6 +18,7 @@ FirebaseConfig config;
 OperationMode currentMode;
 
 char msgID[50];
+char chipIDChar[16];
 
 //#################################################################
 void initiliaseFirebase(){
@@ -71,10 +72,8 @@ void sendDataToFirebase(String jsonData) {
       if (!Firebase.RTDB.setJSON(&fbdo, String(databasePath), &json)) {
         Serial.println(fbdo.errorReason());
       } 
-
-      
-
   }
+  
 }
 
 //#################################################################
@@ -82,8 +81,13 @@ void sendCompleteFlag() {
   FirebaseJson json;
   json.set("complete", true); 
   json.set("timestamp", getCurrentTimestamp());
+  json.set("device_id",chipIDChar);
 
-  if (!Firebase.RTDB.setJSON(&fbdo, FIREBASE_CONTROL_PATH, &json)) {
+  // Build control path
+  char controlPath[64];
+  snprintf(controlPath, sizeof(controlPath), "/ControlFlag/%s", chipIDChar);
+
+  if (!Firebase.RTDB.setJSON(&fbdo, controlPath, &json)) {
     Serial.println(fbdo.errorReason());
   }
 
