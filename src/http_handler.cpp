@@ -18,7 +18,7 @@ FirebaseConfig config;
 OperationMode currentMode;
 
 char msgID[50];
-char chipIDChar[16];
+// char chipIDChar;
 
 //#################################################################
 void initiliaseFirebase(){
@@ -99,7 +99,7 @@ void sendCompleteFlag() {
 void triggerFastAPI() {
   HTTPClient http;
 
-  String url = "http://192.168.20.10:8000/";
+  String url = FASTAPI_IP_TRIGGER;
   if (currentMode == TRAINING) {
     url += "trigger-training";
   } else if (currentMode == TESTING) {

@@ -13,7 +13,7 @@
 #define FIREBASE_TRAINING_PATH "/ESP32_Develop/TrainingDataset/"
 #define FIREBASE_PRODUCTION_PATH "/ESP32_Develop/Data/"
 
-#define FASTAPI_IP_TRIGGER "http://192.168.20.10:8000/trigger-training"
+#define FASTAPI_IP_TRIGGER "http://192.168.20.5:8000/"
 
 
 extern FirebaseData fbdo;  // Firebase data object
