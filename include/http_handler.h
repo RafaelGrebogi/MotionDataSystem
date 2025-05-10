@@ -6,12 +6,15 @@
 #include "time.h"
 #include "api_credentials.h"
 #include "json_handler.h"
+#include "config.h"
 
 #include <Firebase_ESP_Client.h>
 
-#define FIREBASE_CONTROL_PATH "/ControlFlag/"
+#define FIREBASE_DEVELOP_CONTROL_PATH "/ESP32_Develop/ControlFlag/"
 #define FIREBASE_TRAINING_PATH "/ESP32_Develop/TrainingDataset/"
-#define FIREBASE_PRODUCTION_PATH "/ESP32_Develop/Data/"
+
+#define FIREBASE_PRODUCTION_PATH "/ESP32_Production/Data/"
+#define FIREBASE_PRODUCTION_CONTROL_PATH "/ESP32_Production/ControlFlag/"
 
 // #define FASTAPI_IP_TRIGGER "http://192.168.20.5:8000/"
 
