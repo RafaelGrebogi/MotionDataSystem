@@ -146,9 +146,9 @@ void handleTrainingRoot() {
     html += "<button id='startBtn' onclick=\"startTraining()\" disabled>START</button>";
     html += "<button id='stopBtn' onclick=\"fetch('/train_stop')\" disabled>STOP</button>";
 
-    if (!TESTING_MODE) {
-        html += "<button id='sendBtn' onclick=\"sendDataToFastAPI()\">SEND</button>";
-    }
+    // if (!TESTING_MODE) {
+    html += "<button id='sendBtn' onclick=\"sendDataToFastAPI()\">SEND</button>";
+    // }
 
     html += "<script>";
 

@@ -120,6 +120,7 @@ void setup() {
       if(digitalRead(TESTING_MODE_PIN) == HIGH){
         Serial.println(" Testing Mode ENABLED ");
         currentMode = TESTING;
+        TESTING_MODE = true;
       } else{
         Serial.println(" Training Mode ENABLED ");
         currentMode = TRAINING;

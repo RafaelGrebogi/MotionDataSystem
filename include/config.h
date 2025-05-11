@@ -9,6 +9,8 @@
 
 extern bool TRAINING_MODE;  // Operation mode: true -> Training mode | false -> Production mode
 
+
+
 enum OperationMode { TRAINING, TESTING, PRODUCTION };
 extern OperationMode currentMode;
 

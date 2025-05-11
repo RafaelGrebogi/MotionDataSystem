@@ -12,6 +12,7 @@
 
 #define FIREBASE_DEVELOP_CONTROL_PATH "/ESP32_Develop/ControlFlag/"
 #define FIREBASE_TRAINING_PATH "/ESP32_Develop/TrainingDataset/"
+#define FIREBASE_TESTING_PATH "/ESP32_Develop/TestingDataset/"
 
 #define FIREBASE_PRODUCTION_PATH "/ESP32_Production/Data/"
 #define FIREBASE_PRODUCTION_CONTROL_PATH "/ESP32_Production/ControlFlag/"

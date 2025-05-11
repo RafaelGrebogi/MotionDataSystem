@@ -64,7 +64,7 @@ void sendDataToFirebase(String jsonData) {
     sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID); 
   } else if (currentMode == TESTING) {
     // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
-    sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID); 
+    sprintf(databasePath, "%s%s",FIREBASE_TESTING_PATH,msgID); 
   } else if (currentMode == PRODUCTION) {
     // No target labels will be included in this mode
     sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
