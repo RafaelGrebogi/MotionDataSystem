@@ -8,5 +8,6 @@
 extern WiFiClient client;
 
 void ConnectToWifi();
+bool connect2network(const char* ssid, const char* password);
 
 #endif  // WIFI_HANDLER_H
