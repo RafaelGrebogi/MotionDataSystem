@@ -4,7 +4,7 @@
 #define TRAINING_MODE_PIN  12 
 #define TESTING_MODE_PIN  13 
 
-#define FAKE_ID
+// #define FAKE_ID
 
 
 extern bool TRAINING_MODE;  // Operation mode: true -> Training mode | false -> Production mode
