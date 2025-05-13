@@ -10,7 +10,12 @@ bool TRAINING_MODE = false;  // Default mode | This value is read from an input 
 
 bool TESTING_MODE = false; // Default mode | This value is read from an input pin (GPIO)
 
+volatile bool modeChanged = false;
+unsigned long lastModeChangeTime = 0;
+const unsigned long debounceInterval = 3000;  // 3 seconds
+volatile bool serverNeedsUpdate = true;        // Force first setup
 
+OperationMode lastMode = TRAINING;
 
 #include <stdio.h>
 #include <stdint.h> // To handle string conversion
@@ -80,6 +85,46 @@ void safeTriggerFastAPI() {
   triggerFastAPI();
 }
 
+//---------------------
+
+// Mode selection function
+OperationMode readModePin(){
+  int trainingState = digitalRead(TRAINING_MODE_PIN);
+  int testingState = digitalRead(TESTING_MODE_PIN);
+
+  // Check pin states (active LOW due to INPUT_PULLUP)
+  if (trainingState == HIGH && testingState == LOW) {
+      currentMode = TRAINING;
+      TESTING_MODE = false;
+      TRAINING_MODE = true;
+      Serial.println("Mode: Training");
+
+  } else if (trainingState == HIGH && testingState == HIGH) {
+      currentMode = TESTING;
+      TESTING_MODE = true;
+      TRAINING_MODE = false;
+      Serial.println("Mode: Testing");
+  } else {
+      currentMode = PRODUCTION;
+      TRAINING_MODE = false;
+      TESTING_MODE = false;
+      Serial.println("Mode: Production");
+  }
+  return currentMode;
+} 
+
+//---------------------
+
+// Check if the elapsed time is greater than or equal to the interval
+bool isElapsed(unsigned long *lastTime, unsigned long interval) {
+    unsigned long currentTime = millis();
+    
+    if (currentTime - *lastTime >= interval) {
+        *lastTime = currentTime;  // Update the last time
+        return true;              // Time has elapsed
+    }
+    return false;                 // Time has not elapsed
+}
 
 
 //-------------------------------------
@@ -101,7 +146,11 @@ void IRAM_ATTR onTimer(){
 }
 
 
+void IRAM_ATTR handleModeChange() {
+  lastModeChangeTime = millis();  // record the moment of change
+  modeChanged = true;  // Indicate that the mode has changed
 
+}
 
 //-------------------------------------
 void setup() {
@@ -114,22 +163,29 @@ void setup() {
   pinMode(TRAINING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
   pinMode(TESTING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
 
-  // Read the GPIO pin to determine mode
-  if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
-      TRAINING_MODE = true;
-      if(digitalRead(TESTING_MODE_PIN) == HIGH){
-        Serial.println(" Testing Mode ENABLED ");
-        currentMode = TESTING;
-        TESTING_MODE = true;
-      } else{
-        Serial.println(" Training Mode ENABLED ");
-        currentMode = TRAINING;
-      }
-  } else {
-      TRAINING_MODE = false;
-      Serial.println(" Production Mode ENABLED (GPIO LOW)");
-      currentMode = PRODUCTION;
-  }
+  // Attach interrupts to both pins (CHANGE mode to detect both rising and falling edges)
+  attachInterrupt(digitalPinToInterrupt(TRAINING_MODE_PIN), handleModeChange, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(TESTING_MODE_PIN), handleModeChange, CHANGE);
+  Serial.println("Mode Selection Initialised");
+  currentMode = readModePin();
+  lastMode = currentMode;
+
+  // // Read the GPIO pin to determine mode
+  // if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
+  //     TRAINING_MODE = true;
+  //     if(digitalRead(TESTING_MODE_PIN) == HIGH){
+  //       Serial.println(" Testing Mode ENABLED ");
+  //       currentMode = TESTING;
+  //       TESTING_MODE = true;
+  //     } else{
+  //       Serial.println(" Training Mode ENABLED ");
+  //       currentMode = TRAINING;
+  //     }
+  // } else {
+  //     TRAINING_MODE = false;
+  //     Serial.println(" Production Mode ENABLED (GPIO LOW)");
+  //     currentMode = PRODUCTION;
+  // }
 
 
   // Set CPU frequency
@@ -168,12 +224,13 @@ void setup() {
   }
 
   // Initialise WebServer
-  if(TRAINING_MODE){
-    StartWebServerTRAIN(); // Training path
-  }else{
-    Serial.println("Production mode");
-    StartWebServer(); // Production path
-  }
+  InitialWebServerSetup();
+  // if(currentMode == TRAINING || currentMode == TESTING){
+  //   StartWebServerTRAIN(); // Training path
+  // }else{
+  //   Serial.println("Production mode");
+  //   StartWebServer(); // Production path
+  // }
 
   // Initialise MPU6050
   StartMPU6050();
@@ -206,6 +263,42 @@ void setup() {
 void loop() {
 
   server.handleClient();
+  
+  // Verify if aonther mode was selected
+  if (modeChanged && isElapsed(&lastModeChangeTime, debounceInterval)) {
+    // Check if the debounce interval has passed
+    
+    // Reset the flag after processing
+    modeChanged = false;
+
+    // Perform mode change action
+    currentMode = readModePin();
+
+    // Only reconfigure endpoints if mode changed
+    if (currentMode != lastMode) {
+      lastMode = currentMode;
+      serverNeedsUpdate = true;
+      }
+    }
+
+    if (serverNeedsUpdate) {
+      serverNeedsUpdate = false;
+
+      // Clear old routes (optional but good practice)
+      server.close();
+
+      // Register mode-specific endpoints (except "/")
+      if (currentMode == TRAINING || currentMode == TESTING) {
+        StartWebServerTRAIN();  // Registers /train_* etc.
+      } else {
+        StartWebServer();       // Registers /start, /stop, etc.
+      }
+
+      // Serial.println("Server endpoints updated for current mode.");
+    }
+
+  
+
 
   // 100Hz
   if(ISRTimer0){                // Boolean var toggled in Timer0 interruption

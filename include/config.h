@@ -13,5 +13,7 @@ extern bool TRAINING_MODE;  // Operation mode: true -> Training mode | false -> 
 
 enum OperationMode { TRAINING, TESTING, PRODUCTION };
 extern OperationMode currentMode;
+extern OperationMode lastMode;
+
 
 #endif // CONFIG_H

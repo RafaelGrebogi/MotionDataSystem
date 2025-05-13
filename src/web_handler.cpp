@@ -11,7 +11,38 @@ String targetLabel = "Normal Walk";  // Default target label
 
 bool isAcquiring = false;
 
+
+// void configureTrainingServer() {
+//     server.close(); // Optional: stops active clients
+
+//     StartWebServerTRAIN();
+
+//     Serial.println("Training/Testing WebServer started.");
+// }
+
+// void configureProductionServer() {
+//     server.close(); // Optional
+//     StartWebServer();
+    
+//     Serial.println("Production WebServer started.");
+// }
+
+void InitialWebServerSetup() {
+    server.on("/", handleRoot);  // Register dispatcher only once
+    server.begin();              // Start server
+}
+
+
 void handleRoot() {
+    if (currentMode == TRAINING || currentMode == TESTING) {
+        handleTrainingRoot();     // Sends training HTML
+    } else {
+        handleProductionRoot();   // Sends production HTML
+    }
+}
+
+
+void handleProductionRoot() {
     String html = "<html><body>";
     html += "<h2>ESP32 Data Acquisition</h2>";
     html += "<p>Status: <span id='status'>STOPPED</span></p>";
@@ -107,7 +138,7 @@ void handleStatus() {
 }
 
 void StartWebServer() {
-    server.on("/", handleRoot);
+    // server.on("/", handleProductionRoot);
     server.on("/start", handleStart);
     server.on("/stop", handleStop);
     server.on("/status", handleStatus);
@@ -270,7 +301,7 @@ void handleSendNow() {
 }
 
 void StartWebServerTRAIN() {
-    server.on("/", handleTrainingRoot);
+    // server.on("/", handleTrainingRoot);
     server.on("/train_start", handleTrainStart);
     server.on("/train_stop", handleTrainStop);
     server.on("/train_status", handleTrainStatus);
