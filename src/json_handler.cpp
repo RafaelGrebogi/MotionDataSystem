@@ -92,11 +92,25 @@ String prepareJsonPayload() {
         sample["gyro_y"] = sensorBuffer[i].gyroY;
         sample["gyro_z"] = sensorBuffer[i].gyroZ;
         // Include target in each sample
-        if(TRAINING_MODE){
+        switch (currentMode)
+        {
+        case TRAINING:
             sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
-        }else{
+            break;
+
+        case TESTING:
+            sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
+            break;
+
+        case PRODUCTION:
             sample["target"] = "";  // Empty when in production mode
+            break;
         }
+        // if(TRAINING_MODE){
+        //     sample["target"] = sensorBuffer[i].targetLabel;  // Use the selected target ("Normal Walk" or "Limping")
+        // }else{
+        //     sample["target"] = "";  // Empty when in production mode
+        // }
 
     }
 

@@ -170,22 +170,7 @@ void setup() {
   currentMode = readModePin();
   lastMode = currentMode;
 
-  // // Read the GPIO pin to determine mode
-  // if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
-  //     TRAINING_MODE = true;
-  //     if(digitalRead(TESTING_MODE_PIN) == HIGH){
-  //       Serial.println(" Testing Mode ENABLED ");
-  //       currentMode = TESTING;
-  //       TESTING_MODE = true;
-  //     } else{
-  //       Serial.println(" Training Mode ENABLED ");
-  //       currentMode = TRAINING;
-  //     }
-  // } else {
-  //     TRAINING_MODE = false;
-  //     Serial.println(" Production Mode ENABLED (GPIO LOW)");
-  //     currentMode = PRODUCTION;
-  // }
+
 
 
   // Set CPU frequency
