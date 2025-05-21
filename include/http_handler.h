@@ -34,6 +34,8 @@ void sendCompleteFlag();
 void triggerFastAPI();
 bool fetchFastApiIP();
 
+String fetchUserIdFromAPI(String username);
+
 void debugInternetConnection();
 
 #endif  // HTTP_HANDLER_H

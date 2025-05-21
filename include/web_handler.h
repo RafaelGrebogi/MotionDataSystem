@@ -9,6 +9,8 @@
 // #include "http_handler.h"
 // #include "json_handler.h"
 
+
+
 extern WebServer server;  // Declare the web server globally
 extern bool isAcquiring;
 extern hw_timer_t *My_timer;
@@ -23,6 +25,7 @@ void handleProductionRoot();
 void handleRoot();
 
 void handleLogin();
+void handleLoginSubmit();
 
 // Functions for main data acquisition web server
 void StartWebServer();  // Function to initialise the web server
@@ -42,6 +45,7 @@ void handleLabelUpdate();
 void handleCalibration();
 
 extern void safeTriggerFastAPI();
+extern String safeFetchUserId(String username);
 
 // Functions for web server Unit Test
 void test_handleStart();

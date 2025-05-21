@@ -111,6 +111,33 @@ void sendCompleteFlag() {
 
 }
 
+//#################################################################
+String fetchUserIdFromAPI(String username) {
+  HTTPClient http;
+  char apiUrl[200];
+  snprintf(apiUrl, sizeof(apiUrl), "http://%s:8000/get-user-id?username=%s",  fastapi_ip.c_str(), username.c_str());
+
+  http.begin(apiUrl);
+  int httpCode = http.GET();
+
+  if (httpCode == 200) {
+    String payload = http.getString();
+    Serial.println("Received from FastAPI");
+
+    // Assuming FastAPI returns JSON: {"user_id": "uuid-..."}
+    int idx = payload.indexOf("user_id");
+    if (idx != -1) {
+      int start = payload.indexOf(":", idx) + 2;
+      int end = payload.indexOf("\"", start);
+      return payload.substring(start, end);
+    }
+  } else {
+    Serial.printf(" Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return "";
+}
 
 
 //#################################################################

@@ -75,6 +75,16 @@ const int daylightOffset_sec = 3600;
 //-------------------------------------
 // Functions 
 //-------------------------------------
+// Bridging function
+String safeFetchUserId(String username) {
+
+  String user_id = fetchUserIdFromAPI(username);
+
+  return user_id;
+}
+
+
+
 
 // Bridging function
 void safeTriggerFastAPI() {

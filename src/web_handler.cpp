@@ -10,7 +10,7 @@ unsigned long acquisitionStartMillis = 0;
 String targetLabel = "Normal Walk";  // Default target label
 
 bool isAcquiring = false;
-
+String loggedInUserId = "";
 
 // void configureTrainingServer() {
 //     server.close(); // Optional: stops active clients
@@ -52,6 +52,31 @@ void handleLogin() {
 
   server.send(200, "text/html", html);
 }
+
+void handleLoginSubmit() {
+  if (server.hasArg("username")) {
+    String username = server.arg("username");
+    Serial.println("Username entered: " + username);
+
+    // Call FastAPI to retrieve user_id
+    String user_id = safeFetchUserId(username);
+    loggedInUserId = user_id;
+
+    String response = "<html><body>";
+    if (user_id.length() > 0) {
+      response += "<h3>Welcome, " + username + "</h3>";
+      response += "<p>User ID: " + user_id + "</p>";
+    } else {
+      response += "<p>User not found.</p>";
+    }
+    response += "</body></html>";
+    server.send(200, "text/html", response);
+  } else {
+    server.send(400, "text/plain", "Username not provided.");
+  }
+}
+
+
 
 void handleProductionRoot() {
     String html = "<html><body>";
@@ -156,6 +181,10 @@ void StartWebServer() {
     server.on("/stop", handleStop);
     server.on("/status", handleStatus);
     server.on("/calibrate", handleCalibration); 
+
+    server.on("/login", handleLogin);
+    server.on("/submit_login", HTTP_POST, handleLoginSubmit);
+
     // Handle Testing/Training leftovers
     server.on("/train_status", handleUnavailableInProduction);
     server.on("/train_info", handleUnavailableInProduction);
@@ -323,6 +352,10 @@ void StartWebServerTRAIN() {
     server.on("/calibrate", handleCalibration);  
     server.on("/label_update", handleLabelUpdate);
     server.on("/send_now", handleSendNow);  // <-- NEW
+
+    server.on("/login", handleLogin);
+    server.on("/submit_login", HTTP_POST, handleLoginSubmit);
+    
     server.begin();
 }
 
