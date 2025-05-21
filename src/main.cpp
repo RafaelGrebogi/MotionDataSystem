@@ -8,7 +8,7 @@
 
 bool TRAINING_MODE = false;  // Default mode | This value is read from an input pin (GPIO)
 
-bool TESTING_MODE = false; // This value is hard-coded and can be modified
+bool TESTING_MODE = false; // Default mode | This value is read from an input pin (GPIO)
 
 
 
@@ -112,15 +112,17 @@ void setup() {
 
 
   pinMode(TRAINING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
+  pinMode(TESTING_MODE_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
 
   // Read the GPIO pin to determine mode
   if (digitalRead(TRAINING_MODE_PIN) == HIGH) {  
       TRAINING_MODE = true;
-      if(TESTING_MODE){
-        Serial.println(" Testing Mode ENABLED (GPIO HIGH)");
+      if(digitalRead(TESTING_MODE_PIN) == HIGH){
+        Serial.println(" Testing Mode ENABLED ");
         currentMode = TESTING;
+        TESTING_MODE = true;
       } else{
-        Serial.println(" Training Mode ENABLED (GPIO HIGH)");
+        Serial.println(" Training Mode ENABLED ");
         currentMode = TRAINING;
       }
   } else {

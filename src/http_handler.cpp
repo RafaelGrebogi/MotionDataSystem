@@ -59,13 +59,23 @@ void sendDataToFirebase(String jsonData) {
   json.setJsonData(jsonData);  // Convert String to FirebaseJson
 
   char databasePath[80];
-  if(TRAINING_MODE){
-  // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
-    sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID);  
-  }else{
-  // No target labels will be included in this mode
+  if (currentMode == TRAINING) {
+    // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
+    sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID); 
+  } else if (currentMode == TESTING) {
+    // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
+    sprintf(databasePath, "%s%s",FIREBASE_TESTING_PATH,msgID); 
+  } else if (currentMode == PRODUCTION) {
+    // No target labels will be included in this mode
     sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
   }
+  // if(TRAINING_MODE){
+  // // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
+  //   sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID);  
+  // }else{
+  // // No target labels will be included in this mode
+  //   sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
+  // }
 
 
 
@@ -86,7 +96,14 @@ void sendCompleteFlag() {
 
   // Build control path
   char controlPath[64];
-  snprintf(controlPath, sizeof(controlPath), "/ControlFlag/%s", chipIDChar);
+  if (currentMode == TRAINING) {
+    snprintf(controlPath, sizeof(controlPath), "%s%s", FIREBASE_DEVELOP_CONTROL_PATH, chipIDChar);    // DEVELOPMENT MODE
+  } else if (currentMode == TESTING) {
+    snprintf(controlPath, sizeof(controlPath), "%s%s", FIREBASE_DEVELOP_CONTROL_PATH, chipIDChar);    // DEVELOPMENT MODE
+  } else if (currentMode == PRODUCTION) {
+    snprintf(controlPath, sizeof(controlPath), "%s%s", FIREBASE_PRODUCTION_CONTROL_PATH, chipIDChar); // PRODUCTION MODE
+  }
+
 
   if (!Firebase.RTDB.setJSON(&fbdo, controlPath, &json)) {
     Serial.println(fbdo.errorReason());
@@ -113,13 +130,6 @@ void triggerFastAPI() {
     snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-production");
   }
 
-  // if (currentMode == TRAINING) {
-  //   url += "trigger-training";
-  // } else if (currentMode == TESTING) {
-  //   url += "trigger-testing";
-  // } else if (currentMode == PRODUCTION) {
-  //   url += "trigger-production";
-  // }
 
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
