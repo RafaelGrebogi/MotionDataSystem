@@ -22,6 +22,8 @@ void InitialWebServerSetup();
 void handleProductionRoot();
 void handleRoot();
 
+void handleLogin();
+
 // Functions for main data acquisition web server
 void StartWebServer();  // Function to initialise the web server
 void handleStart();

@@ -41,6 +41,17 @@ void handleRoot() {
     }
 }
 
+void handleLogin() {
+  String html = "<html><body>";
+  html += "<h2>User Login</h2>";
+  html += "<form action=\"/submit_login\" method=\"POST\">";
+  html += "Username: <input type=\"text\" name=\"username\">";
+  html += "<input type=\"submit\" value=\"Login\">";
+  html += "</form>";
+  html += "</body></html>";
+
+  server.send(200, "text/html", html);
+}
 
 void handleProductionRoot() {
     String html = "<html><body>";
