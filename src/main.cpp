@@ -158,6 +158,13 @@ void setup() {
   // Initialise Firebase
   initiliaseFirebase();
 
+  // Fetch FastAPI IP address
+  if (!fetchFastApiIP()) {
+    char message[100];
+    snprintf(message, sizeof(message), "⚠️ Using default FastAPI IP:  %s", fastapi_ip);
+    Serial.println(message);
+  }
+
   // Initialise WebServer
   if(TRAINING_MODE){
     StartWebServerTRAIN(); // Training path

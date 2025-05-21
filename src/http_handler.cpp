@@ -10,6 +10,7 @@
 
 // WiFiClient client;
 
+String fastapi_ip = "192.168.20.5";  // Default/fallback IP  = "192.168.20.5"
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -99,24 +100,31 @@ void sendCompleteFlag() {
 void triggerFastAPI() {
   HTTPClient http;
 
-  String url = FASTAPI_IP_TRIGGER;
+  // String url = FASTAPI_IP_TRIGGER;
+  char url[100];  // Adjust size as needed
+  snprintf(url, sizeof(url), "http://%s:8000/", fastapi_ip.c_str());
+
+
   if (currentMode == TRAINING) {
-    url += "trigger-training";
+    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-training");
   } else if (currentMode == TESTING) {
-    url += "trigger-testing";
+    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-testing");
   } else if (currentMode == PRODUCTION) {
-    url += "trigger-production";
+    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-production");
   }
+
+  // if (currentMode == TRAINING) {
+  //   url += "trigger-training";
+  // } else if (currentMode == TESTING) {
+  //   url += "trigger-testing";
+  // } else if (currentMode == PRODUCTION) {
+  //   url += "trigger-production";
+  // }
 
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // 5sec
   
-
-  // // Simulate a different device for testing
-  // #ifdef FAKE_ID
-  //   snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_123");
-  // #endif
 
   char body[100];
   snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
@@ -131,6 +139,28 @@ void triggerFastAPI() {
   http.end();
 }
 
+
+
+//#################################################################
+bool fetchFastApiIP() {
+  if (Firebase.RTDB.getString(&fbdo, "/ServerIP")) {
+      if (fbdo.dataType() == "string") {
+          fastapi_ip = fbdo.stringData();
+          char message[100];
+          snprintf(message, sizeof(message), "✅ Fetched FastAPI IP from Firebase: %s", fastapi_ip.c_str());
+          Serial.println(message);
+          return true;
+      } else {
+          Serial.println("⚠️ Unexpected data type for FastAPI IP.");
+          return false;
+      }
+  } else {
+      char message[100];
+      snprintf(message, sizeof(message), "❌ Failed to get FastAPI IP: %s", fbdo.errorReason());
+      Serial.println(message);
+      return false;
+  }
+}
 
 //#################################################################
 void debugInternetConnection(){
