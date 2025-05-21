@@ -123,6 +123,8 @@ void handleStop() {
     isAcquiring = false;
     timerAlarmDisable(My_timer);
     server.send(200, "text/plain", "Acquisition STOPPED");
+    safeTriggerFastAPI();
+    msgCounter = 0;
 }
 
 void handleUnavailableInProduction() {
@@ -298,6 +300,7 @@ void handleLabelUpdate() {
 void handleSendNow() {
     safeTriggerFastAPI();
     server.send(200, "text/plain", "Data sent to FastAPI");
+    msgCounter = 0;
 }
 
 void StartWebServerTRAIN() {
