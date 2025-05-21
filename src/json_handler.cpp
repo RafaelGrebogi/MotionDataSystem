@@ -52,7 +52,7 @@ void collectData(String targetLabel, float ax, float ay, float az, float gx, flo
         jsonDataReady = prepareJsonPayload();  // Generate JSON
 
         sendDataToFirebase(jsonDataReady);
-
+        sendCompleteFlag();
         // Serial.println("JSON Ready:");
         // Serial.println(jsonDataReady);  // Print JSON for verification
 

@@ -18,6 +18,7 @@ FirebaseConfig config;
 OperationMode currentMode;
 
 char msgID[50];
+// char chipIDChar;
 
 //#################################################################
 void initiliaseFirebase(){
@@ -71,10 +72,8 @@ void sendDataToFirebase(String jsonData) {
       if (!Firebase.RTDB.setJSON(&fbdo, String(databasePath), &json)) {
         Serial.println(fbdo.errorReason());
       } 
-
-      
-
   }
+  
 }
 
 //#################################################################
@@ -82,8 +81,13 @@ void sendCompleteFlag() {
   FirebaseJson json;
   json.set("complete", true); 
   json.set("timestamp", getCurrentTimestamp());
+  json.set("device_id",chipIDChar);
 
-  if (!Firebase.RTDB.setJSON(&fbdo, FIREBASE_CONTROL_PATH, &json)) {
+  // Build control path
+  char controlPath[64];
+  snprintf(controlPath, sizeof(controlPath), "/ControlFlag/%s", chipIDChar);
+
+  if (!Firebase.RTDB.setJSON(&fbdo, controlPath, &json)) {
     Serial.println(fbdo.errorReason());
   }
 
@@ -95,7 +99,7 @@ void sendCompleteFlag() {
 void triggerFastAPI() {
   HTTPClient http;
 
-  String url = "http://192.168.20.10:8000/";
+  String url = FASTAPI_IP_TRIGGER;
   if (currentMode == TRAINING) {
     url += "trigger-training";
   } else if (currentMode == TESTING) {
@@ -108,7 +112,15 @@ void triggerFastAPI() {
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // 5sec
   
-  int httpCode = http.POST("");  // Send empty body
+
+  // // Simulate a different device for testing
+  // #ifdef FAKE_ID
+  //   snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_123");
+  // #endif
+
+  char body[100];
+  snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+  int httpCode = http.POST(String(body));
 
   if (httpCode > 0) {
     Serial.printf("✅ Trigger sent to FastAPI: %d\n", httpCode);

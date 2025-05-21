@@ -11,6 +11,7 @@ bool TRAINING_MODE = false;  // Default mode | This value is read from an input 
 bool TESTING_MODE = false; // This value is hard-coded and can be modified
 
 
+
 #include <stdio.h>
 #include <stdint.h> // To handle string conversion
 
@@ -133,9 +134,19 @@ void setup() {
   setCpuFrequencyMhz(80);
   Serial.print("CPU Frequency (MHz): ");
 
-  // Get Chip ID
+  // Get CPU frequency
   Serial.println(getCpuFrequencyMhz());
-  strcpy(chipIDChar, ESP32_ID_Extraction());
+  
+
+  
+  #ifdef FAKE_ID
+  // Simulate a different device for testing
+    snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_1");
+    Serial.printf("ESP32 ID = %s\n", chipIDChar);
+  #else
+    // Get Chip ID
+    strcpy(chipIDChar, ESP32_ID_Extraction());
+  #endif
   
   // Initialise Wi-Fi
   ConnectToWifi();
