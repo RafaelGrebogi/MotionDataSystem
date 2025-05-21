@@ -6,6 +6,7 @@
 #include "time.h"
 #include "http_handler.h"
 #include "calibration_handler.h"
+#include "config.h"
 
 extern char chipIDChar[16];
 extern char msgID[50];

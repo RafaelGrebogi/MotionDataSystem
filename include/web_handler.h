@@ -16,6 +16,12 @@ extern String targetLabel;  // Holds the selected training label
 extern bool TRAINING_MODE;
 extern bool TESTING_MODE;
 
+
+void InitialWebServerSetup();
+
+void handleProductionRoot();
+void handleRoot();
+
 // Functions for main data acquisition web server
 void StartWebServer();  // Function to initialise the web server
 void handleStart();
