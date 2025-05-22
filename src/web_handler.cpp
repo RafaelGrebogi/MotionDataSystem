@@ -67,7 +67,7 @@ void handleLoginSubmit() {
       response += "<h3>Welcome, " + username + "</h3>";
       response += "<p>User ID: " + user_id + "</p>";
     } else {
-      response += "<p>User not found.</p>";
+      response += "<p>No record found.</p>";
     }
     response += "</body></html>";
     server.send(200, "text/html", response);

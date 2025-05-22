@@ -117,6 +117,9 @@ String fetchUserIdFromAPI(String username) {
   char apiUrl[200];
   snprintf(apiUrl, sizeof(apiUrl), "http://%s:8000/get-user-id?username=%s",  fastapi_ip.c_str(), username.c_str());
 
+  // Serial.printf("\n FastAPI URL: %s\n", apiUrl);
+
+  http.setTimeout(5000);  // 5sec
   http.begin(apiUrl);
   int httpCode = http.GET();
 
