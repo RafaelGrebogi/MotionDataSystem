@@ -19,6 +19,9 @@
 
 // #define FASTAPI_IP_TRIGGER "http://192.168.20.5:8000/"
 
+
+
+
 // Global variable to store the FastAPI IP
 extern String fastapi_ip; 
 
@@ -34,7 +37,7 @@ void sendCompleteFlag();
 void triggerFastAPI();
 bool fetchFastApiIP();
 
-String fetchUserIdFromAPI(String username);
+UserStatus fetchUserStatusFromAPI(String username, String device_id);
 
 void debugInternetConnection();
 

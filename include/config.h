@@ -9,7 +9,11 @@
 
 extern bool TRAINING_MODE;  // Operation mode: true -> Training mode | false -> Production mode
 
-
+struct UserStatus {
+  String userId;
+  bool hasActiveService;
+  bool success;  // true if FastAPI call and parsing succeeded
+};
 
 enum OperationMode { TRAINING, TESTING, PRODUCTION };
 extern OperationMode currentMode;

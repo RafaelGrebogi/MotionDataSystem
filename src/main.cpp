@@ -4,6 +4,11 @@
 //-------------------------------------
 // LIBRARIES
 //-------------------------------------
+#include <Arduino.h>
+#include <unity.h>
+#include <stdio.h>
+#include <stdint.h> // To handle string conversion
+
 #include "config.h"  // Include global configuration
 
 bool TRAINING_MODE = false;  // Default mode | This value is read from an input pin (GPIO)
@@ -17,8 +22,7 @@ volatile bool serverNeedsUpdate = true;        // Force first setup
 
 OperationMode lastMode = TRAINING;
 
-#include <stdio.h>
-#include <stdint.h> // To handle string conversion
+
 
 #include "time.h"
 
@@ -34,8 +38,7 @@ OperationMode lastMode = TRAINING;
 // //Provide the RTDB payload printing info and other helper functions.
 // #include "addons/RTDBHelper.h"
 
-#include <Arduino.h>
-#include <unity.h>
+
 
 #include "mpu6050_handler.h"
 #include "wifi_handler.h"
@@ -76,11 +79,11 @@ const int daylightOffset_sec = 3600;
 // Functions 
 //-------------------------------------
 // Bridging function
-String safeFetchUserId(String username) {
+UserStatus safeFetchUserId(String username) {
 
-  String user_id = fetchUserIdFromAPI(username);
+  UserStatus status = fetchUserStatusFromAPI(username,chipIDChar);
 
-  return user_id;
+  return status;
 }
 
 

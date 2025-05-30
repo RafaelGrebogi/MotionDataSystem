@@ -112,35 +112,57 @@ void sendCompleteFlag() {
 }
 
 //#################################################################
-String fetchUserIdFromAPI(String username) {
+UserStatus fetchUserStatusFromAPI(String username, String device_id) {
   HTTPClient http;
   char apiUrl[200];
-  snprintf(apiUrl, sizeof(apiUrl), "http://%s:8000/get-user-id?username=%s",  fastapi_ip.c_str(), username.c_str());
 
-  // Serial.printf("\n FastAPI URL: %s\n", apiUrl);
+  snprintf(apiUrl, sizeof(apiUrl),
+           "http://%s:8000/get-user-status?username=%s&device_id=%s",
+           fastapi_ip.c_str(), username.c_str(), device_id.c_str());
 
-  http.setTimeout(5000);  // 5sec
+  http.setTimeout(5000);
   http.begin(apiUrl);
   int httpCode = http.GET();
 
+  UserStatus result;
+  result.success = false;
+  result.userId = "";
+  result.hasActiveService = false;
+
   if (httpCode == 200) {
     String payload = http.getString();
-    Serial.println("Received from FastAPI");
+    Serial.println("Received from FastAPI:");
+    Serial.println(payload);  // Debug
 
-    // Assuming FastAPI returns JSON: {"user_id": "uuid-..."}
-    int idx = payload.indexOf("user_id");
-    if (idx != -1) {
-      int start = payload.indexOf(":", idx) + 2;
+    // Extract user_id
+    int idIdx = payload.indexOf("user_id");
+    if (idIdx != -1) {
+      int start = payload.indexOf(":", idIdx) + 2;
       int end = payload.indexOf("\"", start);
-      return payload.substring(start, end);
+      result.userId = payload.substring(start, end);
+    }
+
+    // Extract has_active_service
+    int statusIdx = payload.indexOf("has_active_service");
+    if (statusIdx != -1) {
+      int start = payload.indexOf(":", statusIdx) + 1;
+      int end = payload.indexOf(",", start);
+      if (end == -1) end = payload.indexOf("}", start);
+
+      String statusStr = payload.substring(start, end);
+      statusStr.trim();
+
+      result.hasActiveService = (statusStr == "true");
+      result.success = true;
     }
   } else {
-    Serial.printf(" Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+    Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
   }
 
   http.end();
-  return "";
+  return result;
 }
+
 
 
 //#################################################################

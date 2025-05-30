@@ -45,7 +45,7 @@ void handleLabelUpdate();
 void handleCalibration();
 
 extern void safeTriggerFastAPI();
-extern String safeFetchUserId(String username);
+extern UserStatus safeFetchUserId(String username);
 
 // Functions for web server Unit Test
 void test_handleStart();

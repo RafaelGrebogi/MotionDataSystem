@@ -58,23 +58,27 @@ void handleLoginSubmit() {
     String username = server.arg("username");
     Serial.println("Username entered: " + username);
 
-    // Call FastAPI to retrieve user_id
-    String user_id = safeFetchUserId(username);
-    loggedInUserId = user_id;
+    // Get both user ID and service status
+    UserStatus status = safeFetchUserId(username);
+    loggedInUserId = status.userId;
 
+    // Construct response
     String response = "<html><body>";
-    if (user_id.length() > 0) {
+    if (status.userId.length() > 0) {
       response += "<h3>Welcome, " + username + "</h3>";
-      response += "<p>User ID: " + user_id + "</p>";
+      response += "<p>User ID: " + status.userId + "</p>";
+      response += "<p>Active Service: " + String(status.hasActiveService ? "Yes" : "No") + "</p>";
     } else {
       response += "<p>No record found.</p>";
     }
     response += "</body></html>";
+
     server.send(200, "text/html", response);
   } else {
     server.send(400, "text/plain", "Username not provided.");
   }
 }
+
 
 
 
