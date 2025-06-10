@@ -67,8 +67,8 @@ UserStatus status;
 // Gyroscope bias variable
 // GyroBias gyroBias;
 
-// Chip ID number
-extern char chipIDChar[16];
+// // Chip ID number
+// extern char chipIDChar[16];
 
 // Current time
 const char* ntpServer = "pool.ntp.org";

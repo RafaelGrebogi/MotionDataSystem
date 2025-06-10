@@ -28,6 +28,8 @@ void handleLogin();
 void handleLoginSubmit();
 void handleLogout();
 
+void handleSelectServiceSubmit();
+
 // Functions for main data acquisition web server
 void StartWebServer();  // Function to initialise the web server
 void handleStart();

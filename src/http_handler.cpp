@@ -112,6 +112,58 @@ void sendCompleteFlag() {
 }
 
 //#################################################################
+// UserStatus fetchUserStatusFromAPI(String username, String device_id) {
+//   HTTPClient http;
+//   char apiUrl[200];
+
+//   snprintf(apiUrl, sizeof(apiUrl),
+//            "http://%s:8000/get-user-status?username=%s&device_id=%s",
+//            fastapi_ip.c_str(), username.c_str(), device_id.c_str());
+
+//   http.setTimeout(5000);
+//   http.begin(apiUrl);
+//   int httpCode = http.GET();
+
+//   UserStatus result;
+//   result.success = false;
+//   result.userId = "";
+//   result.hasActiveService = false;
+
+//   if (httpCode == 200) {
+//     String payload = http.getString();
+//     Serial.println("Received from FastAPI:");
+//     Serial.println(payload);  // Debug
+
+//     // Extract user_id
+//     int idIdx = payload.indexOf("user_id");
+//     if (idIdx != -1) {
+//       int start = payload.indexOf(":", idIdx) + 2;
+//       int end = payload.indexOf("\"", start);
+//       result.userId = payload.substring(start, end);
+//     }
+
+//     // Extract has_active_service
+//     int statusIdx = payload.indexOf("has_active_service");
+//     if (statusIdx != -1) {
+//       int start = payload.indexOf(":", statusIdx) + 1;
+//       int end = payload.indexOf(",", start);
+//       if (end == -1) end = payload.indexOf("}", start);
+
+//       String statusStr = payload.substring(start, end);
+//       statusStr.trim();
+
+//       result.hasActiveService = (statusStr == "true");
+//       result.success = true;
+//     }
+//   } else {
+//     Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+//   }
+
+//   http.end();
+//   return result;
+// }
+
+
 UserStatus fetchUserStatusFromAPI(String username, String device_id) {
   HTTPClient http;
   char apiUrl[200];
@@ -128,33 +180,40 @@ UserStatus fetchUserStatusFromAPI(String username, String device_id) {
   result.success = false;
   result.userId = "";
   result.hasActiveService = false;
+  result.selectedServiceId = "";
+  result.serviceCount = 0;
 
   if (httpCode == 200) {
     String payload = http.getString();
     Serial.println("Received from FastAPI:");
-    Serial.println(payload);  // Debug
+    Serial.println(payload);
 
-    // Extract user_id
-    int idIdx = payload.indexOf("user_id");
-    if (idIdx != -1) {
-      int start = payload.indexOf(":", idIdx) + 2;
-      int end = payload.indexOf("\"", start);
-      result.userId = payload.substring(start, end);
+    DynamicJsonDocument doc(8192);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+      Serial.print("JSON parsing error: ");
+      Serial.println( String(error.c_str()));
+      http.end();
+      return result;
     }
 
-    // Extract has_active_service
-    int statusIdx = payload.indexOf("has_active_service");
-    if (statusIdx != -1) {
-      int start = payload.indexOf(":", statusIdx) + 1;
-      int end = payload.indexOf(",", start);
-      if (end == -1) end = payload.indexOf("}", start);
+    // Extract fields
+    result.userId = doc["user_id"].as<String>();
+    result.hasActiveService = doc["has_active_service"];
+    result.selectedServiceId = doc["selected_service_id"].as<String>();
 
-      String statusStr = payload.substring(start, end);
-      statusStr.trim();
-
-      result.hasActiveService = (statusStr == "true");
-      result.success = true;
+    // Extract services array
+    JsonArray services = doc["services"].as<JsonArray>();
+    int count = 0;
+    for (JsonObject s : services) {
+      if (count >= MAX_SERVICES) break;
+      result.services[count].id = s["id"].as<String>();
+      result.services[count].companyName = s["company"]["name"].as<String>();
+      count++;
     }
+    result.serviceCount = count;
+    result.success = true;
+
   } else {
     Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
   }
@@ -162,8 +221,6 @@ UserStatus fetchUserStatusFromAPI(String username, String device_id) {
   http.end();
   return result;
 }
-
-
 
 
   
