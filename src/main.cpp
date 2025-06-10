@@ -22,6 +22,8 @@ volatile bool serverNeedsUpdate = true;        // Force first setup
 
 OperationMode lastMode = TRAINING;
 
+UserStatus status;
+
 
 
 #include "time.h"

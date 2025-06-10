@@ -34,6 +34,12 @@ void InitialWebServerSetup() {
 
 
 void handleRoot() {
+    if (status.userId.length() == 0 || !status.hasActiveService) {
+        // Not logged in or no active service
+        server.sendHeader("Location", "/login");
+        server.send(302, "text/plain", "Redirecting to login...");
+        return;
+    }
     if (currentMode == TRAINING || currentMode == TESTING) {
         handleTrainingRoot();     // Sends training HTML
     } else {
@@ -59,25 +65,37 @@ void handleLoginSubmit() {
     Serial.println("Username entered: " + username);
 
     // Get both user ID and service status
-    UserStatus status = safeFetchUserId(username);
+    status = safeFetchUserId(username);
     loggedInUserId = status.userId;
 
-    // Construct response
-    String response = "<html><body>";
-    if (status.userId.length() > 0) {
-      response += "<h3>Welcome, " + username + "</h3>";
-      response += "<p>User ID: " + status.userId + "</p>";
-      response += "<p>Active Service: " + String(status.hasActiveService ? "Yes" : "No") + "</p>";
+    if (status.userId.length() > 0 && status.hasActiveService) {
+      String redirectTarget = (currentMode == TRAINING || currentMode == TESTING) ? "/training" : "/production";
+      server.sendHeader("Location", redirectTarget);
+      server.send(302, "text/plain", "Redirecting to main page...");
+      return;
     } else {
-      response += "<p>No record found.</p>";
+      String response = "<html><body>";
+      response += "<h3>Access Denied</h3>";
+      response += "<p>Your account is inactive or not registered.</p>";
+      response += "<a href='/login'>Try again</a>";
+      response += "</body></html>";
+      server.send(403, "text/html", response);
     }
-    response += "</body></html>";
-
-    server.send(200, "text/html", response);
   } else {
     server.send(400, "text/plain", "Username not provided.");
   }
 }
+
+
+void handleLogout() {
+  status.userId = "";
+  status.hasActiveService = false;
+  status.success = false;
+  loggedInUserId = "";
+  server.sendHeader("Location", "/login");
+  server.send(302, "text/plain", "Logging out...");
+}
+
 
 
 
@@ -144,6 +162,7 @@ void handleProductionRoot() {
     html += "};";
 
     html += "</script>";
+    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     html += "</body></html>";
 
     server.send(200, "text/html", html);
@@ -154,6 +173,10 @@ void handleProductionRoot() {
 //------------------------------------
 
 void handleStart() {
+    if (!status.hasActiveService) {
+        server.send(403, "text/plain", "Access denied: No active service.");
+        return;
+    }
     isAcquiring = true;
     timerAlarmEnable(My_timer);
     server.send(200, "text/plain", "Acquisition STARTED");
@@ -162,6 +185,10 @@ void handleStart() {
 void handleStop() {
     isAcquiring = false;
     timerAlarmDisable(My_timer);
+    if (!status.hasActiveService) {
+        server.send(403, "text/plain", "Access denied: No active service.");
+        return;
+    }
     server.send(200, "text/plain", "Acquisition STOPPED");
     safeTriggerFastAPI();
     msgCounter = 0;
@@ -180,7 +207,8 @@ void handleStatus() {
 }
 
 void StartWebServer() {
-    // server.on("/", handleProductionRoot);
+    server.on("/", handleRoot);  // optional: this redirects to /login
+    server.on("/production", handleProductionRoot);
     server.on("/start", handleStart);
     server.on("/stop", handleStop);
     server.on("/status", handleStatus);
@@ -188,21 +216,24 @@ void StartWebServer() {
 
     server.on("/login", handleLogin);
     server.on("/submit_login", HTTP_POST, handleLoginSubmit);
+    server.on("/logout", handleLogout);  // ✅ new route
 
-    // Handle Testing/Training leftovers
+    server.on("/training", handleUnavailableInProduction);  // block if wrong mode
+
+    // Handle Training leftovers
     server.on("/train_status", handleUnavailableInProduction);
     server.on("/train_info", handleUnavailableInProduction);
     server.on("/train_start", handleUnavailableInProduction);
     server.on("/train_stop", handleUnavailableInProduction);
     server.on("/label_update", handleUnavailableInProduction);
 
-    // Optional: silence favicon.ico errors
     server.on("/favicon.ico", []() {
-        server.send(204);  // No Content
+        server.send(204);
     }); 
 
     server.begin();
 }
+
 
 //------------------------------------
 // Training Mode Handlers
@@ -210,6 +241,15 @@ void StartWebServer() {
 
 void handleTrainingRoot() {
     String html = "<html><body>";
+    if (!status.hasActiveService) {
+        String html = "<html><body>";
+        html += "<h2>🚫 Access Denied</h2>";
+        html += "<p>Your service is not active. Please contact admin or renew your access.</p>";
+        html += "<a href='/login'>Return to Login</a>";
+        html += "</body></html>";
+        server.send(403, "text/html", html);
+        return;
+    }
     html += "<h2>ESP32 " + String(TESTING_MODE ? "Testing" : "Training") + " Data Acquisition</h2>";
     html += "<button onclick=\"calibrate()\">CALIBRATE</button><br><br>";
     html += "<p>Status: <span id='train_status'>STOPPED</span></p>";
@@ -292,6 +332,7 @@ void handleTrainingRoot() {
     html += "}";
 
     html += "</script>";
+    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     html += "</body></html>";
 
     server.send(200, "text/html", html);
@@ -302,6 +343,10 @@ void handleTrainingRoot() {
 //-----------------------------------
 
 void handleTrainStart() {
+    if (!status.hasActiveService) {
+        server.send(403, "text/plain", "Access denied: No active service.");
+        return;
+    }
     if (server.hasArg("label")) {
         targetLabel = server.arg("label");
     }
@@ -314,6 +359,10 @@ void handleTrainStart() {
 void handleTrainStop() {
     isAcquiring = false;
     timerAlarmDisable(My_timer);
+    if (!status.hasActiveService) {
+        server.send(403, "text/plain", "Access denied: No active service.");
+        return;
+    }
     server.send(200, "text/plain", "Training STOPPED");
 }
 
@@ -348,20 +397,25 @@ void handleSendNow() {
 }
 
 void StartWebServerTRAIN() {
-    // server.on("/", handleTrainingRoot);
+    server.on("/", handleRoot);  // optional: also redirects based on login
+    server.on("/training", handleTrainingRoot);  //  new endpoint
     server.on("/train_start", handleTrainStart);
     server.on("/train_stop", handleTrainStop);
     server.on("/train_status", handleTrainStatus);
     server.on("/train_info", handleTrainInfo);
     server.on("/calibrate", handleCalibration);  
     server.on("/label_update", handleLabelUpdate);
-    server.on("/send_now", handleSendNow);  // <-- NEW
+    server.on("/send_now", handleSendNow);
 
     server.on("/login", handleLogin);
     server.on("/submit_login", HTTP_POST, handleLoginSubmit);
-    
+    server.on("/logout", handleLogout);  //  new route
+
+    server.on("/production", handleUnavailableInProduction);  // block wrong mode
+
     server.begin();
 }
+
 
 //--------------------------------
 // Calibration Handler

@@ -165,31 +165,37 @@ UserStatus fetchUserStatusFromAPI(String username, String device_id) {
 
 
 
+
+  
 //#################################################################
 void triggerFastAPI() {
   HTTPClient http;
 
-  // String url = FASTAPI_IP_TRIGGER;
-  char url[100];  // Adjust size as needed
+
+  char url[150];  // Make sure this buffer is large enough
   snprintf(url, sizeof(url), "http://%s:8000/", fastapi_ip.c_str());
 
-
+  // Append correct endpoint based on mode
   if (currentMode == TRAINING) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-training");
+    strncat(url, "trigger-training", sizeof(url) - strlen(url) - 1);
   } else if (currentMode == TESTING) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-testing");
+    strncat(url, "trigger-testing", sizeof(url) - strlen(url) - 1);
   } else if (currentMode == PRODUCTION) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-production");
+    strncat(url, "trigger-production", sizeof(url) - strlen(url) - 1);
   }
 
+  // Append UserId query parameter
+  strncat(url, "?UserId=", sizeof(url) - strlen(url) - 1);
+  strncat(url, status.userId.c_str(), sizeof(url) - strlen(url) - 1);
 
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
-  http.setTimeout(5000);  // 5sec
-  
+  http.setTimeout(5000);  // Timeout in ms
 
+  // Prepare JSON body with device_id
   char body[100];
   snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+
   int httpCode = http.POST(String(body));
 
   if (httpCode > 0) {
@@ -200,6 +206,7 @@ void triggerFastAPI() {
 
   http.end();
 }
+
 
 
 

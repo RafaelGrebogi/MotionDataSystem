@@ -14,6 +14,7 @@ struct UserStatus {
   bool hasActiveService;
   bool success;  // true if FastAPI call and parsing succeeded
 };
+extern UserStatus status;
 
 enum OperationMode { TRAINING, TESTING, PRODUCTION };
 extern OperationMode currentMode;
