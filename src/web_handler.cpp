@@ -110,7 +110,7 @@ void handleSelectServiceSubmit() {
   if (server.hasArg("service_id")) {
     String selectedServiceIdStr = server.arg("service_id");
     status.selectedServiceId = selectedServiceIdStr.toInt();  // update global status
-    Serial.println("Service selected: " + selectedServiceIdStr);
+    Serial.println("Service selected: " + status.selectedServiceId);
 
     // Determine where to redirect based on mode
     String redirectTarget = (currentMode == TRAINING || currentMode == TESTING) ? "/training" : "/production";
@@ -144,6 +144,7 @@ void handleProductionRoot() {
     html += "<button onclick=\"calibrate()\">CALIBRATE</button>";
     html += "<button id='startBtn' onclick=\"startAcquisition()\" disabled>START</button>";
     html += "<button id='stopBtn' onclick=\"stopAcquisition()\" disabled>STOP</button>";
+    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     html += "<p id='message'></p>";
 
     html += "<script>";
@@ -199,7 +200,7 @@ void handleProductionRoot() {
     html += "};";
 
     html += "</script>";
-    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
+    
     html += "</body></html>";
 
     server.send(200, "text/html", html);
@@ -233,7 +234,7 @@ void handleStop() {
 
 void handleUnavailableInProduction() {
     String html = "<html><body>";
-    html += "<h2>🚫 This page is not available in Production Mode.</h2>";
+    html += "<h2> This page is not available in Production Mode.</h2>";
     html += "<p>Please return to the <a href='/'>main interface</a>.</p>";
     html += "</body></html>";
     server.send(200, "text/html", html);
@@ -279,10 +280,16 @@ void StartWebServer() {
 //------------------------------------
 
 void handleTrainingRoot() {
+    Serial.println("handleTrainingRoot");
+  Serial.print("UserId:");
+  Serial.println(status.userId);
+  Serial.print("ServiceId:");
+  Serial.println(status.selectedServiceId);
+
     String html = "<html><body>";
     if (!status.hasActiveService) {
         String html = "<html><body>";
-        html += "<h2>🚫 Access Denied</h2>";
+        html += "<h2> Access Denied</h2>";
         html += "<p>Your service is not active. Please contact admin or renew your access.</p>";
         html += "<a href='/login'>Return to Login</a>";
         html += "</body></html>";
@@ -304,6 +311,8 @@ void handleTrainingRoot() {
 
     // if (!TESTING_MODE) {
     html += "<button id='sendBtn' onclick=\"sendDataToFastAPI()\">SEND</button>";
+
+    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     // }
 
     html += "<script>";
@@ -371,7 +380,7 @@ void handleTrainingRoot() {
     html += "}";
 
     html += "</script>";
-    html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
+    
     html += "</body></html>";
 
     server.send(200, "text/html", html);

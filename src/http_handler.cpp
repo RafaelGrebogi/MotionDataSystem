@@ -228,6 +228,12 @@ UserStatus fetchUserStatusFromAPI(String username, String device_id) {
 void triggerFastAPI() {
   HTTPClient http;
 
+  Serial.println("triggerFastAPI");
+  Serial.print("UserId:");
+  Serial.println(status.userId);
+  Serial.print("ServiceId:");
+  Serial.println(status.selectedServiceId);
+
 
   char url[150];  // Make sure this buffer is large enough
   snprintf(url, sizeof(url), "http://%s:8000/", fastapi_ip.c_str());
@@ -241,17 +247,25 @@ void triggerFastAPI() {
     strncat(url, "trigger-production", sizeof(url) - strlen(url) - 1);
   }
 
-  // Append UserId query parameter
-  strncat(url, "?UserId=", sizeof(url) - strlen(url) - 1);
-  strncat(url, status.userId.c_str(), sizeof(url) - strlen(url) - 1);
+  // // Append UserId query parameter
+  // strncat(url, "?UserId=", sizeof(url) - strlen(url) - 1);
+  // strncat(url, status.userId.c_str(), sizeof(url) - strlen(url) - 1);
+
+  // // Append ServiceId query parameter
+  // strncat(url, "&ServiceId=", sizeof(url) - strlen(url) - 1);
+  // strncat(url, status.selectedServiceId.c_str(), sizeof(url) - strlen(url) - 1);
 
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(5000);  // Timeout in ms
 
-  // Prepare JSON body with device_id
-  char body[100];
-  snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+  // Prepare JSON body
+  char body[150];
+  snprintf(body, sizeof(body),
+         "{\"device_id\": \"%s\", \"user_id\": %s, \"service_id\": %s}",
+         chipIDChar, status.userId, status.selectedServiceId);
+  // char body[100];
+  // snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
 
   int httpCode = http.POST(String(body));
 

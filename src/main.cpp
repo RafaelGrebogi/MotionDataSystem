@@ -96,6 +96,12 @@ void safeTriggerFastAPI() {
   // Send 'complete' flag to Firebase to inform FastAPI of data available
   sendCompleteFlag();
 
+  Serial.println("safeTriggerFastAPI");
+  Serial.print("UserId:");
+  Serial.println(status.userId);
+  Serial.print("ServiceId:");
+  Serial.println(status.selectedServiceId);
+
   // Trigger FastAPI to read data from Firebase
   triggerFastAPI();
 }
