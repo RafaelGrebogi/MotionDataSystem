@@ -69,13 +69,7 @@ void sendDataToFirebase(String jsonData) {
     // No target labels will be included in this mode
     sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
   }
-  // if(TRAINING_MODE){
-  // // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
-  //   sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID);  
-  // }else{
-  // // No target labels will be included in this mode
-  //   sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
-  // }
+
 
 
 
@@ -112,56 +106,7 @@ void sendCompleteFlag() {
 }
 
 //#################################################################
-// UserStatus fetchUserStatusFromAPI(String username, String device_id) {
-//   HTTPClient http;
-//   char apiUrl[200];
 
-//   snprintf(apiUrl, sizeof(apiUrl),
-//            "http://%s:8000/get-user-status?username=%s&device_id=%s",
-//            fastapi_ip.c_str(), username.c_str(), device_id.c_str());
-
-//   http.setTimeout(5000);
-//   http.begin(apiUrl);
-//   int httpCode = http.GET();
-
-//   UserStatus result;
-//   result.success = false;
-//   result.userId = "";
-//   result.hasActiveService = false;
-
-//   if (httpCode == 200) {
-//     String payload = http.getString();
-//     Serial.println("Received from FastAPI:");
-//     Serial.println(payload);  // Debug
-
-//     // Extract user_id
-//     int idIdx = payload.indexOf("user_id");
-//     if (idIdx != -1) {
-//       int start = payload.indexOf(":", idIdx) + 2;
-//       int end = payload.indexOf("\"", start);
-//       result.userId = payload.substring(start, end);
-//     }
-
-//     // Extract has_active_service
-//     int statusIdx = payload.indexOf("has_active_service");
-//     if (statusIdx != -1) {
-//       int start = payload.indexOf(":", statusIdx) + 1;
-//       int end = payload.indexOf(",", start);
-//       if (end == -1) end = payload.indexOf("}", start);
-
-//       String statusStr = payload.substring(start, end);
-//       statusStr.trim();
-
-//       result.hasActiveService = (statusStr == "true");
-//       result.success = true;
-//     }
-//   } else {
-//     Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
-//   }
-
-//   http.end();
-//   return result;
-// }
 
 
 UserStatus fetchUserStatusFromAPI(String username, String device_id) {
@@ -227,12 +172,6 @@ UserStatus fetchUserStatusFromAPI(String username, String device_id) {
 //#################################################################
 void triggerFastAPI() {
   HTTPClient http;
-
-  Serial.println("triggerFastAPI");
-  Serial.print("UserId:");
-  Serial.println(status.userId);
-  Serial.print("ServiceId:");
-  Serial.println(status.selectedServiceId);
 
 
   char url[150];  // Make sure this buffer is large enough
@@ -320,41 +259,3 @@ void debugInternetConnection(){
 
 
 }
-
-
-// int sendDataToThingSpeak(float value) {
-//     if (WiFi.status() == WL_CONNECTED) {
-//         HTTPClient http;
-//         String url = String(thingSpeakBaseUrl) + "?api_key=" + String(thingSpeakApiKey) + "&field1=" + String(value);
-//         http.begin(client, url);
-//         int httpResponseCode = http.GET();
-
-//         if (httpResponseCode>0) {
-//             Serial.print("ThingSpeak Response: ");
-//             Serial.println(httpResponseCode);
-//           }
-//           else {
-//             Serial.print("Error code: ");
-//             Serial.println(httpResponseCode);
-//           }
-//           String s = http.getString();
-//           Serial.print(s + "\n");
-        
-//         http.end();
-//         return httpResponseCode;
-//     } else {
-//         Serial.println("WiFi Disconnected");
-//         return -1;
-//     }
-// }
-
-
-
-//#### Firebase debugging (if necessary)
-//     Serial.println("❌ Firebase initialization failed. Debugging...");
-//     // Print authentication errors
-//     if (config.signer.tokens.status == token_status_error) {
-//         Serial.print("Firebase Auth Error: ");
-//         Serial.println(config.signer.tokens.error.message.c_str());
-//     }
-// }

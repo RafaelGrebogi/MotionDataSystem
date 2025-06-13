@@ -12,20 +12,7 @@ String targetLabel = "Normal Walk";  // Default target label
 bool isAcquiring = false;
 String loggedInUserId = "";
 
-// void configureTrainingServer() {
-//     server.close(); // Optional: stops active clients
 
-//     StartWebServerTRAIN();
-
-//     Serial.println("Training/Testing WebServer started.");
-// }
-
-// void configureProductionServer() {
-//     server.close(); // Optional
-//     StartWebServer();
-    
-//     Serial.println("Production WebServer started.");
-// }
 
 void InitialWebServerSetup() {
     server.on("/", handleRoot);  // Register dispatcher only once
