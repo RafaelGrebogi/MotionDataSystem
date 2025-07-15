@@ -152,6 +152,11 @@ bool ISRTimer0 = false;
 uint8_t counter100 = 0;
 
 
+// Timer_1 for sampling verification
+hw_timer_t *monitorTimer = NULL;  // This will be Timer 1 for monitoring
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;  // Ensures safe access to shared data across interrupts
+
+volatile uint32_t sampleCounter = 0;  // Increments every time data is acquired
 
 //----------------------------------------------------------------- 
 //----------------- Interruption Service Routine ------------------
@@ -159,15 +164,41 @@ uint8_t counter100 = 0;
 void IRAM_ATTR onTimer(){
 
   ISRTimer0 = true;   // can change to bitwise operator (~) in the future
+
+  // Timer_1 
+  // Increment the sample counter safely
+  portENTER_CRITICAL_ISR(&timerMux);
+  sampleCounter++;
+  portEXIT_CRITICAL_ISR(&timerMux);
+
+
+}
+
+//---------------------
+void IRAM_ATTR monitorISR() {
+  static uint32_t lastSampleCount = 0;
+  uint32_t currentRate = 0;
+
+  portENTER_CRITICAL_ISR(&timerMux);
+  currentRate = sampleCounter - lastSampleCount;  // Calculate difference from last second
+  lastSampleCount = sampleCounter;
+  portEXIT_CRITICAL_ISR(&timerMux);
+
+  // Print the measured rate
+  Serial.print("📏 Sampling Rate: ");
+  Serial.print(currentRate);
+  Serial.println(" Hz");
 }
 
 
+//---------------------
 void IRAM_ATTR handleModeChange() {
   lastModeChangeTime = millis();  // record the moment of change
   modeChanged = true;  // Indicate that the mode has changed
 
 }
 
+//-------------------------------------
 //-------------------------------------
 void setup() {
   // put your setup code here, to run once:
@@ -249,6 +280,12 @@ void setup() {
   My_timer = timerBegin(0, 80, true);  // Timer 0, prescaler 80 (1µs resolution)
   timerAttachInterrupt(My_timer, &onTimer, true);
   timerAlarmWrite(My_timer, 10000, true);  //  100Hz interrupt (10ms interval)
+
+  // Timer 1: Runs every 1 second to monitor sample rate
+  monitorTimer = timerBegin(1, 80, true);  // Timer 1, prescaler 80 → 1µs resolution
+  timerAttachInterrupt(monitorTimer, &monitorISR, true);
+  timerAlarmWrite(monitorTimer, 1000000, true);  // 1,000,000 µs = 1s
+  timerAlarmEnable(monitorTimer);
   
   Serial.println("System Initialised!");
 
