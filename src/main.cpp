@@ -24,7 +24,7 @@ OperationMode lastMode = TRAINING;
 
 UserStatus status;
 
-
+bool monitorEnabled = false;
 
 #include "time.h"
 
@@ -142,6 +142,18 @@ bool isElapsed(unsigned long *lastTime, unsigned long interval) {
     return false;                 // Time has not elapsed
 }
 
+//---------------------
+
+void enableSamplingMonitor() {
+  monitorEnabled = true;
+  Serial.println(" Sampling frequency monitoring ENABLED");
+}
+
+void disableSamplingMonitor() {
+  monitorEnabled = false;
+  Serial.println(" Sampling frequency monitoring DISABLED");
+}
+
 
 //-------------------------------------
 // INTERRUPTION SERVICE ROUTINE VARIABLES 
@@ -157,6 +169,8 @@ hw_timer_t *monitorTimer = NULL;  // This will be Timer 1 for monitoring
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;  // Ensures safe access to shared data across interrupts
 
 volatile uint32_t sampleCounter = 0;  // Increments every time data is acquired
+
+
 
 //----------------------------------------------------------------- 
 //----------------- Interruption Service Routine ------------------
@@ -176,6 +190,8 @@ void IRAM_ATTR onTimer(){
 
 //---------------------
 void IRAM_ATTR monitorISR() {
+  if (!monitorEnabled) return;  // Ignore if disabled
+
   static uint32_t lastSampleCount = 0;
   uint32_t currentRate = 0;
 
@@ -231,7 +247,7 @@ void setup() {
   
   #ifdef FAKE_ID
   // Simulate a different device for testing
-    snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_1");
+    snprintf(chipIDChar, sizeof(chipIDChar), "TEST-SN-001");
     Serial.printf("ESP32 ID = %s\n", chipIDChar);
   #else
     // Get Chip ID
@@ -356,7 +372,7 @@ void loop() {
     // }
     if(counter100 == 100){
       counter100 = 0;
-      Serial.println("🔴 Data Acquisition Running...");;
+      Serial.println("🔴 Data Acquisition Running...");
     }
 
     ISRTimer0 = false;  // can change to bitwise operator (~) in the future
@@ -364,13 +380,21 @@ void loop() {
   }
 
 
-  // float sensorValue = random(10, 100);  // Replace with real sensor data
-  // // sendDataToThingSpeak(sensorValue);
-  
-  // Serial.print("Sent value: ");
-  // Serial.println(sensorValue);
+  // Check for serial commands
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();  // Remove leading/trailing whitespace
 
-  // // delay(17000);  // Wait 17 seconds before next update
+    if (cmd.equalsIgnoreCase("monitor on")) {
+      enableSamplingMonitor();
+    } 
+    else if (cmd.equalsIgnoreCase("monitor off")) {
+      disableSamplingMonitor();
+    } 
+    else {
+      Serial.println(" Unknown command. Use 'monitor on' or 'monitor off'");
+    }
+  }
 
 
 }
