@@ -25,12 +25,16 @@ void InitialWebServerSetup() {
 
 
 void handleRoot() {
-    if (server.hasArg("username")) {
-        String username = server.arg("username");
-        Serial.println("🔑 Auto-login via query: " + username);
+    // if (server.hasArg("username")) {
+    //     String username = server.arg("username");
+    //     Serial.println("🔑 Auto-login via query: " + username);
+    if (server.hasArg("service_id")) {
+        String serviceId = server.arg("service_id");
+        Serial.println("🔑 Auto-login via query: " + serviceId);
 
         // Fetch user details
-        status = safeFetchUserId(username);
+        // status = safeFetchUserId(username);
+        status = safeFetchServiceStatusFromAPI(serviceId);
         loggedInUserId = status.userId;
 
         // GPS data

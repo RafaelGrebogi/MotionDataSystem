@@ -38,6 +38,7 @@ void triggerFastAPI();
 bool fetchFastApiIP();
 
 UserStatus fetchUserStatusFromAPI(String username, String device_id);
+UserStatus fetchServiceStatusFromAPI(String serviceId);
 
 void debugInternetConnection();
 

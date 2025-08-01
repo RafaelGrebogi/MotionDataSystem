@@ -56,6 +56,7 @@ void handleCalibration();
 
 extern void safeTriggerFastAPI();
 extern UserStatus safeFetchUserId(String username);
+extern UserStatus safeFetchServiceStatusFromAPI(String serviceId);
 
 void handleGeoUpdate();
 

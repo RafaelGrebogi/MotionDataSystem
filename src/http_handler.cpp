@@ -105,6 +105,75 @@ void sendCompleteFlag() {
 
 }
 
+
+
+
+//#################################################################
+
+//#################################################################
+
+
+UserStatus fetchServiceStatusFromAPI(String serviceId) {
+  HTTPClient http;
+  char apiUrl[200];
+
+  snprintf(apiUrl, sizeof(apiUrl),
+           "http://%s:8000/get-service-status?service_id=%s",
+           fastapi_ip.c_str(), serviceId.c_str());
+
+  http.setTimeout(5000);
+  http.begin(apiUrl);
+  int httpCode = http.GET();
+
+  UserStatus result;
+  result.success = false;
+  result.userId = "";
+  result.hasActiveService = false;
+  result.selectedServiceId = serviceId;
+  result.serviceCount = 0;
+
+  if (httpCode == 200) {
+    String payload = http.getString();
+    Serial.println("Received from FastAPI:");
+    Serial.println(payload);
+
+    DynamicJsonDocument doc(4096);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+      Serial.print("JSON parsing error: ");
+      Serial.println(String(error.c_str()));
+      http.end();
+      return result;
+    }
+
+    // Required fields
+    result.userId = doc["user_id"].as<String>();
+    result.hasActiveService = doc["has_active_service"];
+    result.selectedServiceId = doc["service_id"].as<String>();
+
+    // Optional single service info
+    JsonObject company = doc["company"];
+    if (!company.isNull()) {
+      result.services[0].id = serviceId;
+      result.services[0].companyName = company["name"].as<String>();
+      result.serviceCount = 1;
+    }
+
+    result.success = true;
+
+  } else {
+    Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return result;
+}
+
+
+
+
+//#################################################################
+
 //#################################################################
 
 

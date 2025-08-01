@@ -89,6 +89,13 @@ UserStatus safeFetchUserId(String username) {
 }
 
 
+// Bridging function
+UserStatus safeFetchServiceStatusFromAPI(String serviceId) {
+
+  UserStatus status = fetchServiceStatusFromAPI(serviceId);
+
+  return status;
+}
 
 
 // Bridging function
