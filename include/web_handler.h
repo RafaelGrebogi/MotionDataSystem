@@ -19,6 +19,13 @@ extern bool TRAINING_MODE;
 extern bool TESTING_MODE;
 
 
+extern String gpsLatitude;
+extern String gpsLongitude;
+extern String gpsAccuracy;
+
+
+
+
 void InitialWebServerSetup();
 
 void handleProductionRoot();
@@ -50,8 +57,10 @@ void handleCalibration();
 extern void safeTriggerFastAPI();
 extern UserStatus safeFetchUserId(String username);
 
+void handleGeoUpdate();
+
 // Functions for web server Unit Test
-void test_handleStart();
-void test_handleStop();
+// void test_handleStart();
+// void test_handleStop();
 
 #endif  // WEB_HANDLER_H

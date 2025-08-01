@@ -12,6 +12,10 @@ String targetLabel = "Normal Walk";  // Default target label
 bool isAcquiring = false;
 String loggedInUserId = "";
 
+String gpsLatitude = "";
+String gpsLongitude = "";
+String gpsAccuracy = "";
+
 
 
 void InitialWebServerSetup() {
@@ -21,18 +25,56 @@ void InitialWebServerSetup() {
 
 
 void handleRoot() {
+    if (server.hasArg("username")) {
+        String username = server.arg("username");
+        Serial.println("🔑 Auto-login via query: " + username);
+
+        // Fetch user details
+        status = safeFetchUserId(username);
+        loggedInUserId = status.userId;
+
+        // GPS data
+        if (server.hasArg("lat")) {
+            gpsLatitude = server.arg("lat");
+        }
+        if (server.hasArg("lon")) {
+            gpsLongitude = server.arg("lon");
+        }
+        if (server.hasArg("accuracy")) {
+            gpsAccuracy = server.arg("accuracy");
+        }
+
+        Serial.println("📍 GPS from query:");
+        Serial.println("Latitude: " + gpsLatitude);
+        Serial.println("Longitude: " + gpsLongitude);
+        Serial.println("Accuracy: " + gpsAccuracy);
+
+        // If login successful, redirect
+        if (status.userId.length() > 0 && status.hasActiveService) {
+            String redirectTarget = (currentMode == TRAINING || currentMode == TESTING) ? "/training" : "/production";
+            server.sendHeader("Location", redirectTarget);
+            server.send(302, "text/plain", "Redirecting to interface...");
+            return;
+        } else {
+            Serial.println(" Invalid user or no active service.");
+        }
+    }
+
+    // Fallback if not logged in or invalid
     if (status.userId.length() == 0 || !status.hasActiveService) {
-        // Not logged in or no active service
         server.sendHeader("Location", "/login");
         server.send(302, "text/plain", "Redirecting to login...");
         return;
     }
+
+    // Already logged in: redirect based on mode
     if (currentMode == TRAINING || currentMode == TESTING) {
-        handleTrainingRoot();     // Sends training HTML
+        handleTrainingRoot();
     } else {
-        handleProductionRoot();   // Sends production HTML
+        handleProductionRoot();
     }
 }
+
 
 void handleLogin() {
   String html = "<html><body>";
@@ -134,9 +176,24 @@ void handleProductionRoot() {
     html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     html += "<p id='message'></p>";
 
+
+
     html += "<script>";
     html += "let statusInterval = null;";
     html += "let isCalibrated = false;";
+
+    // html += "window.onload = () => {";
+    // html += "  updateButtons();";
+    // html += "  navigator.geolocation.getCurrentPosition(function(position) {";
+    // html += "    const lat = position.coords.latitude;";
+    // html += "    const lon = position.coords.longitude;";
+    // html += "    fetch('/geo_update?lat=' + lat + '&lon=' + lon)";
+    // html += "      .then(r => r.text()).then(t => console.log('GPS Sent:', t));";
+    // html += "  }, function(error) {";
+    // html += "    console.error('Geolocation error:', error.message);";
+    // html += "  });";
+    // html += "};"; 
+
 
     html += "function startAcquisition() {";
     html += "  document.getElementById('startBtn').disabled = true;";
@@ -238,6 +295,7 @@ void StartWebServer() {
     server.on("/stop", handleStop);
     server.on("/status", handleStatus);
     server.on("/calibrate", handleCalibration); 
+    server.on("/geo_update", handleGeoUpdate);
 
 
     server.on("/login", handleLogin);
@@ -267,11 +325,11 @@ void StartWebServer() {
 //------------------------------------
 
 void handleTrainingRoot() {
-    Serial.println("handleTrainingRoot");
-  Serial.print("UserId:");
-  Serial.println(status.userId);
-  Serial.print("ServiceId:");
-  Serial.println(status.selectedServiceId);
+//     Serial.println("handleTrainingRoot");
+//   Serial.print("UserId:");
+//   Serial.println(status.userId);
+//   Serial.print("ServiceId:");
+//   Serial.println(status.selectedServiceId);
 
     String html = "<html><body>";
     if (!status.hasActiveService) {
@@ -301,8 +359,11 @@ void handleTrainingRoot() {
 
     html += "<br><br><button onclick=\"window.location.href='/logout'\">Log Out</button>";
     // }
+    // html += "<p id='gps_debug'>[GPS status will appear here]</p>";
 
     html += "<script>";
+
+     
 
     html += "let updateInterval = setInterval(() => { updateUI();";
     if (TESTING_MODE) {
@@ -366,7 +427,22 @@ void handleTrainingRoot() {
     html += "  });";
     html += "}";
 
+
+    // html += "window.onload = () => {";
+    // // html += "  updateButtons();";
+    // html += "  document.getElementById('gps_debug').innerText = 'Requesting location...';";
+    // html += "  navigator.geolocation.getCurrentPosition(function(position) {";
+    // html += "    const lat = position.coords.latitude;";
+    // html += "    const lon = position.coords.longitude;";
+    // html += "    fetch('/geo_update?lat=' + lat + '&lon=' + lon)";
+    // html += "      .then(r => r.text()).then(t => console.log('GPS Sent:', t));";
+    // html += "  }, function(error) {";
+    // html += "    console.error('Geolocation error:', error.message);";
+    // html += "  });";
+    // html += "};";  
+
     html += "</script>";
+    
     
     html += "</body></html>";
 
@@ -441,6 +517,7 @@ void StartWebServerTRAIN() {
     server.on("/calibrate", handleCalibration);  
     server.on("/label_update", handleLabelUpdate);
     server.on("/send_now", handleSendNow);
+    server.on("/geo_update", handleGeoUpdate);
 
     server.on("/login", handleLogin);
     server.on("/submit_login", HTTP_POST, handleLoginSubmit);
@@ -457,7 +534,27 @@ void StartWebServerTRAIN() {
 //--------------------------------
 // GPS Handler
 //--------------------------------
+void handleGeoUpdate() {
+    if (server.hasArg("lat") && server.hasArg("lon")) {
+        gpsLatitude = server.arg("lat");
+        gpsLongitude = server.arg("lon");
 
+        if (server.hasArg("accuracy")) {
+            gpsAccuracy = server.arg("accuracy");
+        }
+
+        // Debug instructions - to be removed later
+        Serial.println("📍 Received GPS:");
+        Serial.println("Latitude: " + gpsLatitude);
+        Serial.println("Longitude: " + gpsLongitude);
+        Serial.println("Accuracy: " + gpsAccuracy);
+
+        server.send(200, "text/plain", "Location updated");
+    } else {
+        server.send(400, "text/plain", "Missing coordinates");
+        Serial.println("GPS Error");
+    }
+}
 
 
 
