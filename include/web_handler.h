@@ -9,6 +9,8 @@
 // #include "http_handler.h"
 // #include "json_handler.h"
 
+
+
 extern WebServer server;  // Declare the web server globally
 extern bool isAcquiring;
 extern hw_timer_t *My_timer;
@@ -17,10 +19,23 @@ extern bool TRAINING_MODE;
 extern bool TESTING_MODE;
 
 
+extern String gpsLatitude;
+extern String gpsLongitude;
+extern String gpsAccuracy;
+
+
+
+
 void InitialWebServerSetup();
 
 void handleProductionRoot();
 void handleRoot();
+
+void handleLogin();
+void handleLoginSubmit();
+void handleLogout();
+
+void handleSelectServiceSubmit();
 
 // Functions for main data acquisition web server
 void StartWebServer();  // Function to initialise the web server
@@ -40,9 +55,13 @@ void handleLabelUpdate();
 void handleCalibration();
 
 extern void safeTriggerFastAPI();
+extern UserStatus safeFetchUserId(String username);
+extern UserStatus safeFetchServiceStatusFromAPI(String serviceId);
+
+void handleGeoUpdate();
 
 // Functions for web server Unit Test
-void test_handleStart();
-void test_handleStop();
+// void test_handleStart();
+// void test_handleStop();
 
 #endif  // WEB_HANDLER_H

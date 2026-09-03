@@ -4,6 +4,11 @@
 //-------------------------------------
 // LIBRARIES
 //-------------------------------------
+#include <Arduino.h>
+#include <unity.h>
+#include <stdio.h>
+#include <stdint.h> // To handle string conversion
+
 #include "config.h"  // Include global configuration
 
 bool TRAINING_MODE = false;  // Default mode | This value is read from an input pin (GPIO)
@@ -17,8 +22,9 @@ volatile bool serverNeedsUpdate = true;        // Force first setup
 
 OperationMode lastMode = TRAINING;
 
-#include <stdio.h>
-#include <stdint.h> // To handle string conversion
+UserStatus status;
+
+bool monitorEnabled = false;
 
 #include "time.h"
 
@@ -34,8 +40,7 @@ OperationMode lastMode = TRAINING;
 // //Provide the RTDB payload printing info and other helper functions.
 // #include "addons/RTDBHelper.h"
 
-#include <Arduino.h>
-#include <unity.h>
+
 
 #include "mpu6050_handler.h"
 #include "wifi_handler.h"
@@ -62,8 +67,8 @@ OperationMode lastMode = TRAINING;
 // Gyroscope bias variable
 // GyroBias gyroBias;
 
-// Chip ID number
-extern char chipIDChar[16];
+// // Chip ID number
+// extern char chipIDChar[16];
 
 // Current time
 const char* ntpServer = "pool.ntp.org";
@@ -75,11 +80,29 @@ const int daylightOffset_sec = 3600;
 //-------------------------------------
 // Functions 
 //-------------------------------------
+// Bridging function
+UserStatus safeFetchUserId(String username) {
+
+  UserStatus status = fetchUserStatusFromAPI(username,chipIDChar);
+
+  return status;
+}
+
+
+// Bridging function
+UserStatus safeFetchServiceStatusFromAPI(String serviceId) {
+
+  UserStatus status = fetchServiceStatusFromAPI(serviceId);
+
+  return status;
+}
+
 
 // Bridging function
 void safeTriggerFastAPI() {
   // Send 'complete' flag to Firebase to inform FastAPI of data available
   sendCompleteFlag();
+
 
   // Trigger FastAPI to read data from Firebase
   triggerFastAPI();
@@ -126,6 +149,18 @@ bool isElapsed(unsigned long *lastTime, unsigned long interval) {
     return false;                 // Time has not elapsed
 }
 
+//---------------------
+
+void enableSamplingMonitor() {
+  monitorEnabled = true;
+  Serial.println(" Sampling frequency monitoring ENABLED");
+}
+
+void disableSamplingMonitor() {
+  monitorEnabled = false;
+  Serial.println(" Sampling frequency monitoring DISABLED");
+}
+
 
 //-------------------------------------
 // INTERRUPTION SERVICE ROUTINE VARIABLES 
@@ -136,6 +171,13 @@ bool ISRTimer0 = false;
 uint8_t counter100 = 0;
 
 
+// Timer_1 for sampling verification
+hw_timer_t *monitorTimer = NULL;  // This will be Timer 1 for monitoring
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;  // Ensures safe access to shared data across interrupts
+
+volatile uint32_t sampleCounter = 0;  // Increments every time data is acquired
+
+
 
 //----------------------------------------------------------------- 
 //----------------- Interruption Service Routine ------------------
@@ -143,15 +185,43 @@ uint8_t counter100 = 0;
 void IRAM_ATTR onTimer(){
 
   ISRTimer0 = true;   // can change to bitwise operator (~) in the future
+
+  // Timer_1 
+  // Increment the sample counter safely
+  portENTER_CRITICAL_ISR(&timerMux);
+  sampleCounter++;
+  portEXIT_CRITICAL_ISR(&timerMux);
+
+
+}
+
+//---------------------
+void IRAM_ATTR monitorISR() {
+  if (!monitorEnabled) return;  // Ignore if disabled
+
+  static uint32_t lastSampleCount = 0;
+  uint32_t currentRate = 0;
+
+  portENTER_CRITICAL_ISR(&timerMux);
+  currentRate = sampleCounter - lastSampleCount;  // Calculate difference from last second
+  lastSampleCount = sampleCounter;
+  portEXIT_CRITICAL_ISR(&timerMux);
+
+  // Print the measured rate
+  Serial.print("📏 Sampling Rate: ");
+  Serial.print(currentRate);
+  Serial.println(" Hz");
 }
 
 
+//---------------------
 void IRAM_ATTR handleModeChange() {
   lastModeChangeTime = millis();  // record the moment of change
   modeChanged = true;  // Indicate that the mode has changed
 
 }
 
+//-------------------------------------
 //-------------------------------------
 void setup() {
   // put your setup code here, to run once:
@@ -184,7 +254,7 @@ void setup() {
   
   #ifdef FAKE_ID
   // Simulate a different device for testing
-    snprintf(chipIDChar, sizeof(chipIDChar), "TEST_DEVICE_1");
+    snprintf(chipIDChar, sizeof(chipIDChar), "TEST-SN-001");
     Serial.printf("ESP32 ID = %s\n", chipIDChar);
   #else
     // Get Chip ID
@@ -233,6 +303,12 @@ void setup() {
   My_timer = timerBegin(0, 80, true);  // Timer 0, prescaler 80 (1µs resolution)
   timerAttachInterrupt(My_timer, &onTimer, true);
   timerAlarmWrite(My_timer, 10000, true);  //  100Hz interrupt (10ms interval)
+
+  // Timer 1: Runs every 1 second to monitor sample rate
+  monitorTimer = timerBegin(1, 80, true);  // Timer 1, prescaler 80 → 1µs resolution
+  timerAttachInterrupt(monitorTimer, &monitorISR, true);
+  timerAlarmWrite(monitorTimer, 1000000, true);  // 1,000,000 µs = 1s
+  timerAlarmEnable(monitorTimer);
   
   Serial.println("System Initialised!");
 
@@ -303,7 +379,7 @@ void loop() {
     // }
     if(counter100 == 100){
       counter100 = 0;
-      Serial.println("🔴 Data Acquisition Running...");;
+      Serial.println("🔴 Data Acquisition Running...");
     }
 
     ISRTimer0 = false;  // can change to bitwise operator (~) in the future
@@ -311,13 +387,21 @@ void loop() {
   }
 
 
-  // float sensorValue = random(10, 100);  // Replace with real sensor data
-  // // sendDataToThingSpeak(sensorValue);
-  
-  // Serial.print("Sent value: ");
-  // Serial.println(sensorValue);
+  // Check for serial commands
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();  // Remove leading/trailing whitespace
 
-  // // delay(17000);  // Wait 17 seconds before next update
+    if (cmd.equalsIgnoreCase("monitor on")) {
+      enableSamplingMonitor();
+    } 
+    else if (cmd.equalsIgnoreCase("monitor off")) {
+      disableSamplingMonitor();
+    } 
+    else {
+      Serial.println(" Unknown command. Use 'monitor on' or 'monitor off'");
+    }
+  }
 
 
 }

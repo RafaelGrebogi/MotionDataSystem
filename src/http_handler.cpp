@@ -69,13 +69,7 @@ void sendDataToFirebase(String jsonData) {
     // No target labels will be included in this mode
     sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
   }
-  // if(TRAINING_MODE){
-  // // Each dataset entry will include a target label (e.g., "Normal Walk" or "Limping")
-  //   sprintf(databasePath, "%s%s",FIREBASE_TRAINING_PATH,msgID);  
-  // }else{
-  // // No target labels will be included in this mode
-  //   sprintf(databasePath, "%s%s",FIREBASE_PRODUCTION_PATH,msgID);  // Create dataset with no target
-  // }
+
 
 
 
@@ -113,31 +107,174 @@ void sendCompleteFlag() {
 
 
 
+
+//#################################################################
+
+//#################################################################
+
+
+UserStatus fetchServiceStatusFromAPI(String serviceId) {
+  HTTPClient http;
+  char apiUrl[200];
+
+  snprintf(apiUrl, sizeof(apiUrl),
+           "http://%s:8000/get-service-status?service_id=%s",
+           fastapi_ip.c_str(), serviceId.c_str());
+
+  http.setTimeout(5000);
+  http.begin(apiUrl);
+  int httpCode = http.GET();
+
+  UserStatus result;
+  result.success = false;
+  result.userId = "";
+  result.hasActiveService = false;
+  result.selectedServiceId = serviceId;
+  result.serviceCount = 0;
+
+  if (httpCode == 200) {
+    String payload = http.getString();
+    Serial.println("Received from FastAPI:");
+    Serial.println(payload);
+
+    DynamicJsonDocument doc(4096);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+      Serial.print("JSON parsing error: ");
+      Serial.println(String(error.c_str()));
+      http.end();
+      return result;
+    }
+
+    // Required fields
+    result.userId = doc["user_id"].as<String>();
+    result.hasActiveService = doc["has_active_service"];
+    result.selectedServiceId = doc["service_id"].as<String>();
+
+    // Optional single service info
+    JsonObject company = doc["company"];
+    if (!company.isNull()) {
+      result.services[0].id = serviceId;
+      result.services[0].companyName = company["name"].as<String>();
+      result.serviceCount = 1;
+    }
+
+    result.success = true;
+
+  } else {
+    Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return result;
+}
+
+
+
+
+//#################################################################
+
+//#################################################################
+
+
+
+UserStatus fetchUserStatusFromAPI(String username, String device_id) {
+  HTTPClient http;
+  char apiUrl[200];
+
+  snprintf(apiUrl, sizeof(apiUrl),
+           "http://%s:8000/get-user-status?username=%s&device_id=%s",
+           fastapi_ip.c_str(), username.c_str(), device_id.c_str());
+
+  http.setTimeout(5000);
+  http.begin(apiUrl);
+  int httpCode = http.GET();
+
+  UserStatus result;
+  result.success = false;
+  result.userId = "";
+  result.hasActiveService = false;
+  result.selectedServiceId = "";
+  result.serviceCount = 0;
+
+  if (httpCode == 200) {
+    String payload = http.getString();
+    Serial.println("Received from FastAPI:");
+    Serial.println(payload);
+
+    DynamicJsonDocument doc(8192);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error) {
+      Serial.print("JSON parsing error: ");
+      Serial.println( String(error.c_str()));
+      http.end();
+      return result;
+    }
+
+    // Extract fields
+    result.userId = doc["user_id"].as<String>();
+    result.hasActiveService = doc["has_active_service"];
+    result.selectedServiceId = doc["selected_service_id"].as<String>();
+
+    // Extract services array
+    JsonArray services = doc["services"].as<JsonArray>();
+    int count = 0;
+    for (JsonObject s : services) {
+      if (count >= MAX_SERVICES) break;
+      result.services[count].id = s["id"].as<String>();
+      result.services[count].companyName = s["company"]["name"].as<String>();
+      count++;
+    }
+    result.serviceCount = count;
+    result.success = true;
+
+  } else {
+    Serial.printf("Error calling FastAPI, code: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+  return result;
+}
+
+
+  
 //#################################################################
 void triggerFastAPI() {
   HTTPClient http;
 
-  // String url = FASTAPI_IP_TRIGGER;
-  char url[100];  // Adjust size as needed
+
+  char url[150];  // Make sure this buffer is large enough
   snprintf(url, sizeof(url), "http://%s:8000/", fastapi_ip.c_str());
 
-
+  // Append correct endpoint based on mode
   if (currentMode == TRAINING) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-training");
+    strncat(url, "trigger-training", sizeof(url) - strlen(url) - 1);
   } else if (currentMode == TESTING) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-testing");
+    strncat(url, "trigger-testing", sizeof(url) - strlen(url) - 1);
   } else if (currentMode == PRODUCTION) {
-    snprintf(url + strlen(url), sizeof(url) - strlen(url), "trigger-production");
+    strncat(url, "trigger-production", sizeof(url) - strlen(url) - 1);
   }
 
+  // // Append UserId query parameter
+  // strncat(url, "?UserId=", sizeof(url) - strlen(url) - 1);
+  // strncat(url, status.userId.c_str(), sizeof(url) - strlen(url) - 1);
+
+  // // Append ServiceId query parameter
+  // strncat(url, "&ServiceId=", sizeof(url) - strlen(url) - 1);
+  // strncat(url, status.selectedServiceId.c_str(), sizeof(url) - strlen(url) - 1);
 
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
-  http.setTimeout(5000);  // 5sec
-  
+  http.setTimeout(5000);  // Timeout in ms
 
-  char body[100];
-  snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+  // Prepare JSON body
+  char body[150];
+  snprintf(body, sizeof(body),
+         "{\"device_id\": \"%s\", \"user_id\": %s, \"service_id\": %s}",
+         chipIDChar, status.userId, status.selectedServiceId);
+  // char body[100];
+  // snprintf(body, sizeof(body), "{\"device_id\": \"%s\"}", chipIDChar);
+
   int httpCode = http.POST(String(body));
 
   if (httpCode > 0) {
@@ -148,6 +285,7 @@ void triggerFastAPI() {
 
   http.end();
 }
+
 
 
 
@@ -190,41 +328,3 @@ void debugInternetConnection(){
 
 
 }
-
-
-// int sendDataToThingSpeak(float value) {
-//     if (WiFi.status() == WL_CONNECTED) {
-//         HTTPClient http;
-//         String url = String(thingSpeakBaseUrl) + "?api_key=" + String(thingSpeakApiKey) + "&field1=" + String(value);
-//         http.begin(client, url);
-//         int httpResponseCode = http.GET();
-
-//         if (httpResponseCode>0) {
-//             Serial.print("ThingSpeak Response: ");
-//             Serial.println(httpResponseCode);
-//           }
-//           else {
-//             Serial.print("Error code: ");
-//             Serial.println(httpResponseCode);
-//           }
-//           String s = http.getString();
-//           Serial.print(s + "\n");
-        
-//         http.end();
-//         return httpResponseCode;
-//     } else {
-//         Serial.println("WiFi Disconnected");
-//         return -1;
-//     }
-// }
-
-
-
-//#### Firebase debugging (if necessary)
-//     Serial.println("❌ Firebase initialization failed. Debugging...");
-//     // Print authentication errors
-//     if (config.signer.tokens.status == token_status_error) {
-//         Serial.print("Firebase Auth Error: ");
-//         Serial.println(config.signer.tokens.error.message.c_str());
-//     }
-// }

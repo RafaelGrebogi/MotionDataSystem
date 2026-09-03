@@ -19,6 +19,9 @@
 
 // #define FASTAPI_IP_TRIGGER "http://192.168.20.5:8000/"
 
+
+
+
 // Global variable to store the FastAPI IP
 extern String fastapi_ip; 
 
@@ -33,6 +36,9 @@ void sendDataToFirebase(String jsonData);
 void sendCompleteFlag();
 void triggerFastAPI();
 bool fetchFastApiIP();
+
+UserStatus fetchUserStatusFromAPI(String username, String device_id);
+UserStatus fetchServiceStatusFromAPI(String serviceId);
 
 void debugInternetConnection();
 
